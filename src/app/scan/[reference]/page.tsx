@@ -58,14 +58,14 @@ function LanguageSelector({ lang, setLang }: { lang: Language; setLang: (l: Lang
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full text-slate-300 hover:bg-white/20 transition-colors text-sm font-medium backdrop-blur-sm border border-white/10"
+        className="flex items-center gap-2 px-4 py-2.5 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors text-base font-medium backdrop-blur-sm border border-white/20 min-h-[48px]"
       >
-        <Globe className="w-4 h-4" />
+        <Globe className="w-5 h-5" />
         <span>{LANGUAGE_NAMES[lang]}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 bg-[#1a1a2e] border border-indigo-700 rounded-xl shadow-2xl overflow-hidden z-50 min-w-[140px] backdrop-blur-sm">
+        <div className="absolute top-full right-0 mt-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-xl overflow-hidden z-50 min-w-[160px]">
           {(['fr', 'en', 'ar'] as Language[]).map((l) => (
             <button
               key={l}
@@ -73,10 +73,10 @@ function LanguageSelector({ lang, setLang }: { lang: Language; setLang: (l: Lang
                 setLang(l);
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
+              className={`w-full px-5 py-3.5 text-left text-base font-medium transition-colors ${
                 lang === l 
-                  ? 'bg-indigo-600/30 text-amber-400' 
-                  : 'text-slate-300 hover:bg-indigo-900/50 hover:text-slate-100'
+                  ? 'bg-orange-500 text-white' 
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
               {LANGUAGE_NAMES[l]}
@@ -118,19 +118,17 @@ function ActivationRedirect({ type, reference, t, lang, setLang }: {
   }, [type, reference, router]);
 
   const isHajj = type === 'hajj';
-  const bgGradient = isHajj
-    ? 'from-[#0d5e34] to-[#0a4a2a]'
-    : 'from-[#d35400] to-[#b34700]';
+  const bgClass = isHajj ? 'bg-[#0d5e34]' : 'bg-[#6613e3]';
 
   return (
-    <main className={`min-h-screen bg-gradient-to-b ${bgGradient} flex items-center justify-center p-4`}>
-      <div className="relative max-w-md w-full bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center border border-white/20">
+    <main className={`min-h-screen ${bgClass} flex items-center justify-center p-5 md:p-8`}>
+      <div className="relative max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 text-center border border-white/20 shadow-xl">
         <div className="absolute top-4 right-4">
           <LanguageSelector lang={lang} setLang={setLang} />
         </div>
 
         <div className="relative inline-block mb-6">
-          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center animate-pulse border border-white/20">
             {isHajj ? (
               <Plane className="w-10 h-10 text-white" />
             ) : (
@@ -142,26 +140,26 @@ function ActivationRedirect({ type, reference, t, lang, setLang }: {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-white mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
           {t('common.welcome')}
         </h1>
-        <p className="text-white/70 mb-4">
+        <p className="text-white/70 text-base md:text-lg mb-4">
           {t('common.activate_in')}
         </p>
 
-        <div className="bg-white/10 rounded-lg p-4 mb-6">
-          <p className="text-white/60 text-sm mb-2">{t('common.baggage_type')}</p>
-          <Badge className={`${isHajj ? 'bg-[#1e3a2e] text-green-300' : 'bg-[#7a3e00] text-orange-300'} text-sm px-4 py-1`}>
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 md:p-5 mb-6">
+          <p className="text-white/60 text-base mb-2">{t('common.baggage_type')}</p>
+          <Badge className={`${isHajj ? 'bg-[#1e3a2e] text-green-300' : 'bg-[#f59e0b]/20 text-[#fbbf24]'} text-base md:text-lg px-5 py-1.5`}>
             {isHajj ? t('common.hajj_label') : t('common.voyageur_label')}
           </Badge>
         </div>
 
-        <p className="text-white/50 text-sm mb-4">
-          {t('common.auto_redirect')} <span className="text-white font-bold">{countdown}s</span>
+        <p className="text-white/50 text-base mb-5">
+          {t('common.auto_redirect')} <span className="text-white font-bold text-lg">{countdown}s</span>
         </p>
 
         <button
-          className="w-full py-3 px-6 bg-white text-[#080c1a] rounded-lg font-semibold hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg transition-colors flex items-center justify-center gap-2 min-h-[56px]"
           onClick={() => {
             const url = isHajj
               ? `/hajj/activate?qr=${reference}`
@@ -170,7 +168,7 @@ function ActivationRedirect({ type, reference, t, lang, setLang }: {
           }}
         >
           {t('common.start_activation')}
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-5 h-5" />
         </button>
       </div>
     </main>
@@ -180,10 +178,10 @@ function ActivationRedirect({ type, reference, t, lang, setLang }: {
 // Loading Component
 function LoadingScreen({ t }: { t: (key: string) => string }) {
   return (
-    <main className="min-h-screen bg-[#0c0a2a] flex items-center justify-center">
+    <main className="min-h-screen bg-[#6613e3] flex items-center justify-center">
       <div className="text-center text-white">
-        <div className="animate-spin w-12 h-12 border-4 border-indigo-500/30 border-t-amber-500 rounded-full mx-auto mb-4"></div>
-        <p className="text-slate-300">{t('common.loading')}</p>
+        <div className="animate-spin w-12 h-12 border-4 border-white/30 border-t-white rounded-full mx-auto mb-4"></div>
+        <p className="text-lg">{t('common.loading')}</p>
       </div>
     </main>
   );
@@ -205,17 +203,17 @@ function ErrorScreen({
 
   const errorConfig = {
     not_found: {
-      icon: <AlertCircle className="w-10 h-10 text-red-400" />,
+      icon: <AlertCircle className="w-12 h-12 text-red-400" />,
       title: t('errors.qr_not_valid'),
       message: t('errors.qr_not_valid_desc')
     },
     blocked: {
-      icon: <Shield className="w-10 h-10 text-gray-400" />,
+      icon: <Shield className="w-12 h-12 text-gray-400" />,
       title: t('errors.baggage_blocked'),
       message: t('errors.baggage_blocked_desc')
     },
     expired: {
-      icon: <Clock className="w-10 h-10 text-gray-400" />,
+      icon: <Clock className="w-12 h-12 text-gray-400" />,
       title: t('errors.protection_expired'),
       message: t('errors.protection_expired_desc')
     }
@@ -224,19 +222,19 @@ function ErrorScreen({
   const config = errorConfig[type as keyof typeof errorConfig] || errorConfig.not_found;
 
   return (
-    <main className="min-h-screen bg-[#0c0a2a] flex items-center justify-center p-4 relative">
+    <main className="min-h-screen bg-[#6613e3] flex items-center justify-center p-5 md:p-8 relative">
       <div className="absolute top-4 right-4">
         <LanguageSelector lang={lang} setLang={setLang} />
       </div>
 
-      <div className="max-w-md w-full bg-indigo-900/60 rounded-xl p-8 text-center border border-indigo-700">
+      <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 text-center border border-white/20 shadow-xl">
         <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
           {config.icon}
         </div>
-        <h1 className="text-2xl font-bold text-slate-100 mb-2">{config.title}</h1>
-        <p className="text-slate-400 mb-6">{config.message}</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">{config.title}</h1>
+        <p className="text-white/70 text-base md:text-lg mb-6">{config.message}</p>
         <button
-          className="px-6 py-2 border border-indigo-700 text-slate-400 rounded-lg hover:bg-indigo-800/50 transition-colors"
+          className="px-8 py-4 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20 transition-colors text-base font-medium min-h-[56px]"
           onClick={() => router.push('/')}
         >
           {t('common.back_home')}
@@ -251,12 +249,12 @@ function SuccessToast({ show, message }: { show: boolean; message: string }) {
   if (!show) return null;
   
   return (
-    <div className="fixed top-5 right-5 bg-amber-500 text-slate-900 px-6 py-4 rounded-xl shadow-lg z-50 animate-in slide-in-from-right duration-300">
+    <div className="fixed top-5 right-5 bg-orange-500 text-white px-6 py-4 rounded-xl shadow-lg z-50 animate-in slide-in-from-right duration-300">
       <div className="flex items-center gap-3">
-        <CheckCircle className="w-5 h-5" />
+        <CheckCircle className="w-6 h-6" />
         <div>
-          <div className="font-bold">Wahoo ! 🎉</div>
-          <div className="text-sm opacity-80">{message}</div>
+          <div className="font-bold text-lg">Wahoo ! 🎉</div>
+          <div className="text-base opacity-90">{message}</div>
         </div>
       </div>
     </div>
@@ -519,10 +517,10 @@ export default function ScanPage() {
   // Lost baggage alert
   const isDeclaredLost = baggage?.declaredLostAt && !baggage?.foundAt;
 
-  // ─── Main Render — Dark Violet Night Theme ───
+  // ─── Main Render — Purple Theme with Enlarged Fonts ───
   return (
     <main 
-      className="min-h-screen bg-[#0c0a2a] flex items-center justify-center p-4" 
+      className="min-h-screen bg-[#6613e3] flex items-center justify-center p-5 md:p-8" 
       dir={dir}
     >
       {/* Language Selector */}
@@ -534,45 +532,45 @@ export default function ScanPage() {
       <SuccessToast show={showSuccess} message={t('finder.message_sent')} />
 
       {/* Content Container */}
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-md mx-auto">
         {/* Urgent Banner for Lost Baggage */}
         {isDeclaredLost && (
-          <div className="bg-red-600 text-white text-center py-2.5 px-4 rounded-t-2xl">
-            <p className="font-bold text-sm flex items-center justify-center gap-2">
-              <AlertTriangle className="w-4 h-4" />
+          <div className="bg-red-600 text-white text-center py-3 px-5 rounded-t-2xl mb-0">
+            <p className="font-bold text-base md:text-lg flex items-center justify-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
               URGENT – Bagage signalé perdu !
             </p>
           </div>
         )}
 
-        {/* Success Badge — Amber, Premium rounded-full */}
-        <div className="bg-amber-500 text-slate-900 text-center py-3 px-6 rounded-full font-bold text-base md:text-lg shadow-lg hover:shadow-xl transition-shadow tracking-wide mx-4 -mt-2 relative z-10">
+        {/* Success Badge */}
+        <div className="bg-orange-500 text-white text-center py-3 px-6 rounded-full font-bold text-lg md:text-xl shadow-lg hover:shadow-xl transition-shadow tracking-wide mx-4 -mt-2 relative z-10">
           {t('finder.success_badge')} ✈️
         </div>
 
-        {/* Main Card — Dark Indigo */}
-        <div className="bg-indigo-950/80 border border-indigo-800 rounded-b-2xl p-5 backdrop-blur-sm">
+        {/* Main Card — Glassmorphism */}
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-b-2xl rounded-t-2xl p-5 md:p-6 shadow-xl">
           
           {/* ─── Owner Info Block ─── */}
           {baggage && (
-            <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-4 mb-3">
-              <h3 className="text-amber-400/90 text-[10px] font-bold uppercase tracking-widest mb-3">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5 md:p-6 mb-4">
+              <h3 className="text-orange-400 text-sm font-bold uppercase tracking-widest mb-4">
                 {t('finder.owner_info')}
               </h3>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-11 h-11 bg-indigo-700/60 rounded-full flex items-center justify-center border border-indigo-600/40">
-                  <Luggage className="w-5 h-5 text-amber-400" />
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-14 h-14 bg-white/15 rounded-full flex items-center justify-center border border-white/20 flex-shrink-0">
+                  <Luggage className="w-7 h-7 text-orange-400" />
                 </div>
-                <div>
-                  <div className="text-slate-100 font-bold text-base leading-tight">
+                <div className="min-w-0">
+                  <div className="text-white font-bold text-xl md:text-2xl leading-tight truncate">
                     {baggage.travelerName}
                   </div>
-                  <div className="text-slate-500 text-xs font-mono mt-0.5">{reference}</div>
+                  <div className="text-white/60 text-base font-mono mt-1">{reference}</div>
                 </div>
               </div>
               {baggage.agency && (
-                <div className="text-slate-400 text-xs flex items-center gap-1.5 mt-2 pl-1">
-                  <Shield className="w-3.5 h-3.5 text-indigo-400" />
+                <div className="text-white/70 text-base flex items-center gap-2 mt-3 pl-1">
+                  <Shield className="w-5 h-5 text-orange-400" />
                   {baggage.agency}
                 </div>
               )}
@@ -581,35 +579,35 @@ export default function ScanPage() {
 
           {/* ─── Travel Details Block ─── */}
           {baggage && (
-            <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-4 mb-4">
-              <h3 className="text-amber-400/90 text-[10px] font-bold uppercase tracking-widest mb-3">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5 md:p-6 mb-5">
+              <h3 className="text-orange-400 text-sm font-bold uppercase tracking-widest mb-4">
                 {t('finder.travel_details')}
               </h3>
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {baggage.flightNumber && (
-                  <div className="flex items-center gap-2.5">
-                    <Plane className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-                    <span className="text-slate-100 text-sm font-medium">{baggage.flightNumber}</span>
+                  <div className="flex items-center gap-3">
+                    <Plane className="w-5 h-5 text-white/70 flex-shrink-0" />
+                    <span className="text-white text-lg md:text-xl font-semibold">{baggage.flightNumber}</span>
                   </div>
                 )}
                 {baggage.destination && (
-                  <div className="flex items-center gap-2.5">
-                    <MapPin className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-                    <span className="text-slate-100 text-sm">{baggage.destination}</span>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-white/70 flex-shrink-0" />
+                    <span className="text-white text-lg md:text-xl font-semibold">{baggage.destination}</span>
                   </div>
                 )}
                 {baggage.departureDate && (
-                  <div className="flex items-center gap-2.5">
-                    <Clock className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-                    <span className="text-slate-100 text-sm">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-white/70 flex-shrink-0" />
+                    <span className="text-white text-lg md:text-xl font-semibold">
                       {formatDate(baggage.departureDate)}{baggage.departureTime ? ` – ${baggage.departureTime}` : ''}
                     </span>
                   </div>
                 )}
                 {!baggage.departureDate && baggage.createdAt && (
-                  <div className="flex items-center gap-2.5">
-                    <Clock className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-                    <span className="text-slate-200 text-sm">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-white/70 flex-shrink-0" />
+                    <span className="text-white text-lg md:text-xl font-semibold">
                       {t('finder.activation_date')} {formatDate(baggage.createdAt)}
                     </span>
                   </div>
@@ -618,7 +616,7 @@ export default function ScanPage() {
             </div>
           )}
 
-          {/* ─── Step 1: GPS Share Button (Amber) ─── */}
+          {/* ─── Step 1: GPS Share Button ─── */}
           {!showForm && (
             <button
               onClick={() => {
@@ -626,16 +624,16 @@ export default function ScanPage() {
                 handleShareLocation();
               }}
               disabled={isLoadingLocation}
-              className="w-full py-4 px-6 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl mb-4 disabled:opacity-70"
+              className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg md:text-xl transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl min-h-[56px] disabled:opacity-70 focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-[#6613e3] mb-4"
             >
               {isLoadingLocation ? (
                 <>
-                  <span className="animate-spin">⏳</span>
+                  <span className="animate-spin text-xl">⏳</span>
                   {t('finder.locating')}
                 </>
               ) : (
                 <>
-                  <Navigation className="w-5 h-5" />
+                  <Navigation className="w-6 h-6" />
                   {t('finder.share_gps')}
                 </>
               )}
@@ -644,25 +642,25 @@ export default function ScanPage() {
 
           {/* ─── Step 2: Finder Form ─── */}
           {showForm && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
               {/* GPS Success */}
               {sharedPosition && !geoError && (
-                <div className="p-3 bg-green-500/15 border border-green-500/30 rounded-xl flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span className="text-slate-200 text-sm">
+                <div className="p-4 bg-green-500/15 border border-green-500/30 rounded-xl flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-400" />
+                  <span className="text-white text-base md:text-lg font-medium">
                     ✓ {locationText}
                   </span>
                 </div>
               )}
 
-              {/* GPS Error — Orange */}
+              {/* GPS Error */}
               {geoError && (
-                <div className="p-3 bg-orange-500/15 border border-orange-500/30 rounded-xl">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                <div className="p-4 bg-orange-500/15 border border-orange-500/30 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-6 h-6 text-orange-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-orange-300 text-sm font-medium">{t('finder.gps_unavailable')}</p>
-                      <p className="text-orange-400/80 text-xs mt-1">{geoError}</p>
+                      <p className="text-orange-300 text-base font-medium">{t('finder.gps_unavailable')}</p>
+                      <p className="text-orange-400/80 text-base mt-1">{geoError}</p>
                     </div>
                   </div>
                 </div>
@@ -670,7 +668,7 @@ export default function ScanPage() {
 
               {/* Manual Location Input */}
               <div className={sharedPosition ? 'opacity-75' : ''}>
-                <label className="text-[10px] text-slate-400 mb-1 block font-medium uppercase tracking-wider">
+                <label className="text-base font-medium text-white/70 mb-1.5 block">
                   {sharedPosition ? t('finder.location_optional') : t('finder.location_label')}
                 </label>
                 <input
@@ -678,7 +676,7 @@ export default function ScanPage() {
                   placeholder={sharedPosition ? t('finder.location_optional_placeholder') : t('finder.location_placeholder')}
                   value={otherLocation}
                   onChange={(e) => setOtherLocation(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-800/80 border border-slate-600/50 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-transparent transition-all"
+                  className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-xl text-white text-base md:text-lg placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all min-h-[56px]"
                 />
               </div>
 
@@ -688,7 +686,7 @@ export default function ScanPage() {
                 placeholder={t('finder.first_name')}
                 value={finderName}
                 onChange={(e) => setFinderName(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800/80 border border-slate-600/50 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-transparent transition-all"
+                className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-xl text-white text-base md:text-lg placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all min-h-[56px]"
               />
 
               {/* WhatsApp Input */}
@@ -697,15 +695,15 @@ export default function ScanPage() {
                 placeholder={`${t('finder.whatsapp')} (+33612345678)`}
                 value={finderPhone}
                 onChange={(e) => setFinderPhone(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800/80 border border-slate-600/50 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-transparent transition-all"
+                className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-xl text-white text-base md:text-lg placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all min-h-[56px]"
               />
 
               {/* ─── Contact The Owner — Two Buttons ─── */}
               <div className="pt-2">
-                <h3 className="text-amber-400/90 text-[10px] font-bold uppercase tracking-widest text-center mb-3">
+                <h3 className="text-orange-400 text-sm font-bold uppercase tracking-widest text-center mb-4">
                   {t('finder.contact_the_owner_title')}
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* WhatsApp Button */}
                   <button
                     onClick={() => {
@@ -713,9 +711,9 @@ export default function ScanPage() {
                       handleWhatsApp();
                     }}
                     disabled={isSubmitting}
-                    className="py-3.5 px-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-70 shadow-lg shadow-green-600/20"
+                    className="py-4 px-5 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-lg min-h-[56px] disabled:opacity-70 shadow-lg focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-[#6613e3]"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <MessageCircle className="w-5 h-5" />
                     {t('finder.by_whatsapp')}
                   </button>
                   {/* Phone Button */}
@@ -725,9 +723,9 @@ export default function ScanPage() {
                       handlePhoneCall();
                     }}
                     disabled={isSubmitting}
-                    className="py-3.5 px-3 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-70 shadow-lg shadow-amber-500/20"
+                    className="py-4 px-5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-lg min-h-[56px] disabled:opacity-70 shadow-lg focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-[#6613e3]"
                   >
-                    <Phone className="w-4 h-4" />
+                    <Phone className="w-5 h-5" />
                     {t('finder.by_phone')}
                   </button>
                 </div>
@@ -738,9 +736,9 @@ export default function ScanPage() {
                 <button
                   onClick={handleShareLocation}
                   disabled={isLoadingLocation}
-                  className="w-full py-2 text-sm text-slate-500 hover:text-slate-300 flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-3 text-base text-white/70 hover:text-white flex items-center justify-center gap-2 transition-colors min-h-[48px]"
                 >
-                  <Navigation className="w-4 h-4" />
+                  <Navigation className="w-5 h-5" />
                   {isLoadingLocation ? t('finder.locating') : t('finder.retry_gps')}
                 </button>
               )}
@@ -748,14 +746,12 @@ export default function ScanPage() {
           )}
 
           {/* ─── Trust Note ─── */}
-          <div className="mt-5 text-center text-[10px] text-slate-500 tracking-wide">
-            <Shield className="w-3.5 h-3.5 inline mr-1 text-indigo-400/60" />
+          <div className="mt-6 text-center text-base text-white/60 tracking-wide">
+            <Shield className="w-5 h-5 inline mr-1.5 text-white/40" />
             {t('finder.trust_note')}
           </div>
         </div>
       </div>
-
-
     </main>
   );
 }
