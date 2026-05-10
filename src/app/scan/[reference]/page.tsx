@@ -65,6 +65,8 @@ function LanguageSelector({ lang, setLang }: { lang: Language; setLang: (l: Lang
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
         className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-white border border-blue-200 rounded-full text-blue-900 hover:bg-blue-50 transition-colors text-xs sm:text-sm md:text-base font-medium shadow-sm min-h-[36px] sm:min-h-[40px] md:min-h-[44px]"
       >
         <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -72,10 +74,12 @@ function LanguageSelector({ lang, setLang }: { lang: Language; setLang: (l: Lang
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1 sm:mt-2 bg-white border border-blue-200 rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px] sm:min-w-[160px]">
+        <div role="listbox" aria-label="Language" className="absolute top-full right-0 mt-1 sm:mt-2 bg-white border border-blue-200 rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px] sm:min-w-[160px]">
           {(['fr', 'en', 'ar'] as Language[]).map((l) => (
             <button
               key={l}
+              role="option"
+              aria-selected={lang === l}
               onClick={() => {
                 setLang(l);
                 setIsOpen(false);
@@ -311,14 +315,14 @@ export default function ScanPage() {
         setBaggageData(data);
       } catch (error) {
         console.error('Error fetching baggage:', error);
-        setBaggageData({ status: 'error', message: t('errors.server_error') });
+        setBaggageData({ status: 'error', message: 'Erreur serveur' });
       } finally {
         setLoading(false);
       }
     };
 
     fetchBaggage();
-  }, [reference, t]);
+  }, [reference]);
 
   // GPS Location Handler - iOS Optimized
   const handleShareLocation = useCallback(async () => {
@@ -780,7 +784,7 @@ export default function ScanPage() {
             {/* WhatsApp Input */}
             <input
               type="tel"
-              placeholder={`${t('finder.whatsapp')} (+33612345678)`}
+              placeholder={`${t('finder.whatsapp')} ${t('finder.whatsapp_placeholder')}`}
               value={finderPhone}
               onChange={(e) => setFinderPhone(e.target.value)}
               className="w-full px-4 py-3.5 bg-white border-2 border-blue-200 rounded-xl text-blue-900 text-base md:text-lg placeholder:text-blue-900/40 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all min-h-[52px]"

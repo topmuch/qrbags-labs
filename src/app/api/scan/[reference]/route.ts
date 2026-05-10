@@ -316,7 +316,7 @@ export async function POST(
         groqUsed: aiGenerated || !!scanGuardAnalysis,
         groqLatencyMs: aiLatencyMs,
         // AI-FEATURE: Store scan guard analysis in aiAnalysis JSON
-        aiAnalysis: scanGuardAnalysis ?? undefined,
+        aiAnalysis: scanGuardAnalysis ? JSON.parse(JSON.stringify(scanGuardAnalysis)) : undefined,
       }
     });
 
