@@ -8,11 +8,8 @@ export default function NotFound() {
     <div className="min-h-screen bg-[#080c1a] flex items-center justify-center px-4">
       <div className="text-center text-white max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#1E40AF] to-[#1D4ED8] rounded-lg flex items-center justify-center shadow-lg shadow-[#1E40AF]/20">
-            <QrCode className="w-7 h-7 text-white" />
-          </div>
-          <span className="text-2xl font-bold text-[#1E40AF]">QRBag</span>
+        <div className="flex items-center justify-center mb-8">
+          <img src="/logo.png" alt="QRBag" className="w-12 h-12 object-contain" />
         </div>
 
         {/* 404 */}

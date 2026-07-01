@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, XCircle, RefreshCw, Mail, ArrowLeft } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw, Mail, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -15,6 +15,7 @@ function VerifyEmailContent() {
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -92,33 +93,46 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
+      {/* Subtle accent glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full opacity-20 blur-[150px] pointer-events-none" style={{ background: 'rgba(37,99,235,0.15)' }} />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-bold text-[#2563EB]">QRBag</h1>
+          <Link href="/" className="inline-flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl p-2.5 flex items-center justify-center bg-blue-50">
+              <img src="/logo.png" alt="QRBag" className="w-full h-full object-contain" />
+            </div>
           </Link>
-          <p className="text-slate-500 mt-2">Vérification de l'email</p>
+          <p className="text-slate-500 mt-3 text-sm">Vérification de l&apos;email</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
           {status === 'loading' && token && (
             <div className="text-center py-8">
-              <RefreshCw className="w-12 h-12 text-[#2563EB] animate-spin mx-auto mb-4" />
-              <p className="text-slate-600">Vérification en cours...</p>
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                <RefreshCw className="w-7 h-7 text-blue-600 animate-spin" />
+              </div>
+              <p className="text-slate-600 text-sm">Vérification en cours...</p>
             </div>
           )}
 
           {status === 'success' && (
             <div className="text-center py-4">
-              <CheckCircle className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Email vérifié !</h2>
-              <p className="text-slate-600 mb-6">{message}</p>
+              <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Email vérifié !</h2>
+              <p className="text-slate-600 text-sm mb-6">{message}</p>
               <button
                 onClick={() => router.push('/login')}
-                className="w-full py-3 bg-[#2563EB] text-white rounded-xl font-medium hover:bg-[#ff6600] transition-colors"
+                className="w-full py-3.5 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]"
+                style={{
+                  background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                  boxShadow: '0 8px 24px rgba(37,99,235,0.2)',
+                }}
               >
                 Se connecter
               </button>
@@ -127,12 +141,14 @@ function VerifyEmailContent() {
 
           {status === 'error' && (
             <div className="text-center py-4">
-              <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Erreur</h2>
-              <p className="text-slate-600 mb-6">{message}</p>
+              <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <XCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Erreur</h2>
+              <p className="text-slate-600 text-sm mb-6">{message}</p>
               <button
                 onClick={() => router.push('/login')}
-                className="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+                className="w-full py-3.5 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-200 transition-colors"
               >
                 Retour à la connexion
               </button>
@@ -143,8 +159,10 @@ function VerifyEmailContent() {
           {status !== 'success' && (!token || status === 'error') && (
             <div>
               <div className="text-center mb-6">
-                <Mail className="w-12 h-12 text-[#2563EB] mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-800 mb-2">Entrez votre code</h2>
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck className="w-7 h-7 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Entrez votre code</h2>
                 <p className="text-slate-500 text-sm">
                   Entrez votre email et le code à 6 chiffres reçu par email
                 </p>
@@ -152,24 +170,33 @@ function VerifyEmailContent() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-[#2563EB]"
-                  />
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <div className={`relative flex items-center rounded-xl border-2 transition-all duration-200 ${
+                    focusedField === 'email' ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+                  }`}>
+                    <div className={`pl-4 transition-colors ${focusedField === 'email' ? 'text-slate-900' : 'text-slate-400'}`}>
+                      <Mail className="w-[18px] h-[18px]" />
+                    </div>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      placeholder="votre@email.com"
+                      className="w-full bg-transparent border-none outline-none text-slate-900 placeholder-slate-400 py-3.5 px-3 text-sm"
+                    />
+                  </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-2">Code de vérification</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Code de vérification</label>
                   <input
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="000000"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-[#2563EB]"
+                    className="w-full px-4 py-3.5 border-2 border-slate-200 bg-slate-50/50 rounded-xl text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-slate-900 focus:bg-white transition-all font-mono"
                     maxLength={6}
                   />
                 </div>
@@ -177,7 +204,11 @@ function VerifyEmailContent() {
                 <button
                   onClick={verifyWithCode}
                   disabled={verifying || code.length !== 6 || !email}
-                  className="w-full py-3 bg-[#2563EB] text-white rounded-xl font-medium hover:bg-[#ff6600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 text-white rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                    boxShadow: '0 8px 24px rgba(37,99,235,0.2)',
+                  }}
                 >
                   {verifying ? 'Vérification...' : 'Vérifier'}
                 </button>
@@ -189,7 +220,7 @@ function VerifyEmailContent() {
                 <button
                   onClick={resendVerification}
                   disabled={verifying || !email}
-                  className="w-full py-3 text-[#2563EB] font-medium hover:underline"
+                  className="w-full py-3 text-blue-600 font-medium hover:underline text-sm disabled:opacity-50"
                 >
                   Renvoyer le code
                 </button>
@@ -199,7 +230,7 @@ function VerifyEmailContent() {
 
           {/* Back link */}
           <div className="mt-6 text-center">
-            <Link href="/login" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm">
+            <Link href="/login" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Retour à la connexion
             </Link>
@@ -213,8 +244,8 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-[#2563EB] animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
       </div>
     }>
       <VerifyEmailContent />

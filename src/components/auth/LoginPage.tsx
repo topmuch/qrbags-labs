@@ -13,6 +13,10 @@ import {
   Building2,
   ArrowRight,
   CheckCircle,
+  Fingerprint,
+  KeyRound,
+  Mail,
+  Lock,
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -31,10 +35,12 @@ interface LoginConfig {
   role: string;
   redirectPath: string;
   bgImage: string;
-  accentClass: string;
-  accentHoverClass: string;
-  accentFocusRing: string;
+  accentColor: string;
+  accentHover: string;
+  accentLight: string;
+  accentGlow: string;
   badgeText: string;
+  badgeIcon: typeof QrCode;
   leftTitle: string;
   leftSubtitle: string;
   switchText: string;
@@ -47,17 +53,19 @@ const CONFIGS: Record<LoginVariant, LoginConfig> = {
   agence: {
     type: 'agence',
     title: 'Espace Agence',
-    subtitle: 'Connectez-vous à votre dashboard sécurisé',
+    subtitle: 'Connectez-vous à votre espace professionnel',
     demoEmail: 'agence@qrbag.com',
     demoPassword: 'agence123',
     demoLabel: 'Agence',
     role: 'agency',
     redirectPath: '/agence/tableau-de-bord',
-    bgImage: '/images/login-bg.png',
-    accentClass: 'text-blue-500',
-    accentHoverClass: 'hover:text-blue-700',
-    accentFocusRing: 'focus:ring-blue-500',
+    bgImage: '/login-agence-bg.png',
+    accentColor: '#2563EB',
+    accentHover: '#1D4ED8',
+    accentLight: '#EFF6FF',
+    accentGlow: 'rgba(37,99,235,0.15)',
     badgeText: 'Agence',
+    badgeIcon: Building2,
     leftTitle: 'QRBag pour les professionnels du voyage',
     leftSubtitle: 'Gérez vos bagages, vos clients, vos QR — depuis un seul tableau de bord.',
     switchText: 'Vous êtes administrateur ?',
@@ -79,11 +87,13 @@ const CONFIGS: Record<LoginVariant, LoginConfig> = {
     demoLabel: 'SuperAdmin',
     role: 'superadmin',
     redirectPath: '/admin/tableau-de-bord',
-    bgImage: '/images/login-bg.png',
-    accentClass: 'text-blue-700',
-    accentHoverClass: 'hover:text-blue-800',
-    accentFocusRing: 'focus:ring-blue-600',
+    bgImage: '/login-admin-bg.png',
+    accentColor: '#1E40AF',
+    accentHover: '#1E3A8A',
+    accentLight: '#EFF6FF',
+    accentGlow: 'rgba(30,64,175,0.15)',
     badgeText: 'Admin',
+    badgeIcon: Shield,
     leftTitle: 'QRBag — Contrôle centralisé',
     leftSubtitle: 'Gérez agences, QR codes, utilisateurs et API — tout depuis un seul tableau de bord.',
     switchText: 'Vous êtes une agence ?',
@@ -112,6 +122,7 @@ export default function LoginPage({ variant }: { variant: LoginVariant }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -155,11 +166,12 @@ export default function LoginPage({ variant }: { variant: LoginVariant }) {
   };
 
   const isAgence = variant === 'agence';
+  const BadgeIcon = config.badgeIcon;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col lg:flex-row">
-      {/* ─── LEFT: Image Panel ─── */}
-      <div className="relative hidden lg:block lg:w-1/2 xl:w-[55%] min-h-screen">
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+      {/* ─── LEFT: Immersive Visual Panel ─── */}
+      <div className="relative hidden lg:flex lg:w-[55%] xl:w-[58%] min-h-screen items-center justify-center overflow-hidden">
         {/* Background Image */}
         <Image
           src={config.bgImage}
@@ -167,49 +179,60 @@ export default function LoginPage({ variant }: { variant: LoginVariant }) {
           fill
           className="object-cover"
           priority
-          sizes="55vw"
+          sizes="58vw"
         />
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/20" />
+        {/* Multi-layer Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/40" />
+        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${config.accentColor}33 0%, transparent 50%, ${config.accentColor}22 100%)` }} />
+
+        {/* Decorative Grid Pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+          backgroundSize: '40px 40px',
+        }} />
 
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-end p-10 xl:p-14">
-          {/* Logo */}
-          <div className="absolute top-8 left-8 xl:top-10 xl:left-10">
-            <Link href="/" className="flex items-center gap-2.5">
-              <img src="/logo.png" alt="QRBag" className="w-10 h-10 rounded-xl object-contain bg-white/15 backdrop-blur-md p-1 border border-white/20" />
-              <span className="text-xl font-bold text-white tracking-tight">QRBag</span>
+        <div className="relative z-10 h-full flex flex-col justify-between p-10 xl:p-14 w-full">
+          {/* Top: Logo + Badge */}
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center group">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl p-2 border border-white/20 flex items-center justify-center group-hover:bg-white/15 transition-all duration-300">
+                <img src="/logo.png" alt="QRBag" className="w-full h-full object-contain" />
+              </div>
             </Link>
-          </div>
 
-          {/* Badge */}
-          <div className="mb-8">
-            <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase backdrop-blur-md border ${
+            <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase backdrop-blur-xl border ${
               isAgence
-                ? 'bg-blue-500/20 border-blue-600/30 text-blue-300'
-                : 'bg-blue-700/20 border-blue-800/30 text-blue-200'
+                ? 'bg-blue-500/15 border-blue-400/20 text-blue-300'
+                : 'bg-blue-800/20 border-blue-600/20 text-blue-200'
             }`}>
-              {isAgence ? <Building2 className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
+              <BadgeIcon className="w-3.5 h-3.5" />
               {config.badgeText}
             </span>
           </div>
 
-          {/* Title */}
-          <h2 className="text-3xl xl:text-4xl font-bold text-white mb-4 leading-tight max-w-lg">
-            {config.leftTitle}
-          </h2>
-          <p className="text-white/75 text-base xl:text-lg leading-relaxed max-w-md mb-10">
-            {config.leftSubtitle}
-          </p>
+          {/* Middle: Title + Subtitle */}
+          <div className="max-w-lg">
+            <h2 className="text-4xl xl:text-5xl font-bold text-white mb-5 leading-tight">
+              {config.leftTitle}
+            </h2>
+            <p className="text-white/65 text-lg xl:text-xl leading-relaxed max-w-md">
+              {config.leftSubtitle}
+            </p>
+          </div>
 
-          {/* Features */}
+          {/* Bottom: Feature Cards */}
           <div className="grid grid-cols-2 gap-3">
-            {config.features.map((feat) => (
-              <div key={feat.title} className="bg-white/8 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
-                <feat.icon className="w-4 h-4 text-white/60 mb-1.5" />
-                <p className="text-white text-sm font-semibold leading-tight">{feat.title}</p>
-                <p className="text-white/50 text-xs mt-0.5 leading-snug">{feat.desc}</p>
+            {config.features.map((feat, i) => (
+              <div
+                key={feat.title}
+                className="group bg-white/[0.06] hover:bg-white/[0.1] backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                <feat.icon className="w-5 h-5 text-white/50 mb-2.5 group-hover:text-white/70 transition-colors" />
+                <p className="text-white text-sm font-semibold leading-tight mb-1">{feat.title}</p>
+                <p className="text-white/40 text-xs leading-snug">{feat.desc}</p>
               </div>
             ))}
           </div>
@@ -217,102 +240,127 @@ export default function LoginPage({ variant }: { variant: LoginVariant }) {
       </div>
 
       {/* ─── RIGHT: Form Panel ─── */}
-      <div className="w-full lg:w-1/2 xl:w-[45%] min-h-screen flex items-center justify-center bg-white px-6 py-12 sm:px-10">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-[45%] xl:w-[42%] min-h-screen flex items-center justify-center bg-white px-6 py-12 sm:px-10 relative">
+        {/* Subtle accent glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-30 blur-[120px] pointer-events-none" style={{ background: config.accentGlow }} />
+
+        <div className="w-full max-w-[420px] relative z-10">
 
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2.5 mb-10">
-            <img src="/logo.png" alt="QRBag" className="w-10 h-10 rounded-xl object-contain" />
-            <span className="text-xl font-bold text-slate-800 tracking-tight">QRBag</span>
-          </div>
-
-          {/* Mobile badge */}
-          <div className="lg:hidden flex justify-center mb-8">
-            <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase ${
-              isAgence
-                ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                : 'text-blue-800 text-blue-700 border border-blue-300'
-            }`}>
-              {isAgence ? <Building2 className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
+          <div className="lg:hidden flex flex-col items-center mb-10">
+            <div className="w-16 h-16 rounded-2xl p-2 mb-3 flex items-center justify-center" style={{ background: config.accentLight }}>
+              <img src="/logo.png" alt="QRBag" className="w-full h-full object-contain" />
+            </div>
+            <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mt-2`} style={{ background: config.accentLight, color: config.accentColor }}>
+              <BadgeIcon className="w-3.5 h-3.5" />
               {config.badgeText}
             </span>
           </div>
 
-          {/* Title */}
+          {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight mb-2">
+            <div className="hidden lg:flex items-center gap-2 mb-6">
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase`} style={{ background: config.accentLight, color: config.accentColor }}>
+                <BadgeIcon className="w-3.5 h-3.5" />
+                {config.badgeText}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
               {config.title}
             </h1>
-            <p className="text-slate-500">{config.subtitle}</p>
+            <p className="text-slate-500 text-sm">{config.subtitle}</p>
           </div>
 
           {/* Error */}
           {error && (
-            <div className="mb-6 p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
-              <span className="flex-shrink-0">⚠️</span>
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-2xl text-sm flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <span className="text-red-500 text-sm">!</span>
+              </div>
               {error}
             </div>
           )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+            {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Email
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Adresse email
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition text-sm"
-                style={{ '--tw-ring-color': isAgence ? '#2563EB' : '#1D4ED8' } as React.CSSProperties}
-                placeholder={variant === 'agence' ? 'vous@agence.com' : 'admin@qrbag.com'}
-                required
-              />
+              <div className={`relative flex items-center rounded-xl border-2 transition-all duration-200 ${
+                focusedField === 'email' ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+              }`}>
+                <div className={`pl-4 transition-colors ${focusedField === 'email' ? 'text-slate-900' : 'text-slate-400'}`}>
+                  <Mail className="w-[18px] h-[18px]" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                  className="w-full bg-transparent border-none outline-none text-slate-900 placeholder-slate-400 py-3.5 px-3 text-sm"
+                  placeholder={variant === 'agence' ? 'vous@agence.com' : 'admin@qrbag.com'}
+                  required
+                />
+              </div>
             </div>
 
-            {/* Password */}
+            {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Mot de passe
               </label>
-              <div className="relative">
+              <div className={`relative flex items-center rounded-xl border-2 transition-all duration-200 ${
+                focusedField === 'password' ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+              }`}>
+                <div className={`pl-4 transition-colors ${focusedField === 'password' ? 'text-slate-900' : 'text-slate-400'}`}>
+                  <Lock className="w-[18px] h-[18px]" />
+                </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition pr-11 text-sm"
-                  style={{ '--tw-ring-color': isAgence ? '#2563EB' : '#1D4ED8' } as React.CSSProperties}
-                  placeholder="••••••••"
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
+                  className="w-full bg-transparent border-none outline-none text-slate-900 placeholder-slate-400 py-3.5 px-3 text-sm"
+                  placeholder="Entrez votre mot de passe"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="pr-4 text-slate-400 hover:text-slate-600 transition-colors"
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
                 </button>
               </div>
             </div>
 
             {/* Remember / Forgot */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center cursor-pointer gap-2">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300"
-                  style={{ accentColor: isAgence ? '#2563EB' : '#1D4ED8' }}
-                />
+              <label className="flex items-center cursor-pointer gap-2.5 group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-4.5 h-4.5 w-[18px] h-[18px] rounded-md border-2 border-slate-300 peer-checked:border-transparent transition-colors group-hover:border-slate-400 peer-hover:border-slate-400" style={{ borderColor: rememberMe ? config.accentColor : undefined }}>
+                  </div>
+                  {rememberMe && (
+                    <CheckCircle className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white" style={{ color: config.accentColor }} />
+                  )}
+                </div>
                 <span className="text-sm text-slate-500">Se souvenir de moi</span>
               </label>
               <Link
                 href="/forgot-password"
-                className={`text-sm font-medium ${config.accentClass} ${config.accentHoverClass} transition-colors`}
+                className="text-sm font-medium transition-colors hover:underline"
+                style={{ color: config.accentColor }}
               >
                 Mot de passe oublié ?
               </Link>
@@ -322,19 +370,20 @@ export default function LoginPage({ variant }: { variant: LoginVariant }) {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm hover:shadow-lg ${
-                isAgence
-                  ? 'bg-blue-500 hover:bg-blue-700 shadow-blue-500/25'
-                  : 'bg-blue-800 hover:bg-blue-900 shadow-blue-800/25'
-              }`}
+              className="w-full text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 text-sm shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: `linear-gradient(135deg, ${config.accentColor}, ${config.accentHover})`,
+                boxShadow: `0 8px 24px ${config.accentColor}33`,
+              }}
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Connexion...
+                  Connexion en cours...
                 </>
               ) : (
                 <>
+                  <KeyRound className="w-4 h-4" />
                   Se connecter
                   <ArrowRight className="w-4 h-4" />
                 </>
@@ -342,26 +391,31 @@ export default function LoginPage({ variant }: { variant: LoginVariant }) {
             </button>
           </form>
 
+          {/* Divider */}
+          <div className="my-8 flex items-center gap-4">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">ou</span>
+            <div className="flex-1 h-px bg-slate-200" />
+          </div>
+
           {/* Demo Account */}
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-2.5">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Fingerprint className="w-3.5 h-3.5" />
                 Compte de démonstration
               </h3>
               <button
                 type="button"
                 onClick={fillDemo}
-                className={`text-xs font-semibold ${config.accentClass} ${config.accentHoverClass} transition-colors`}
+                className="text-xs font-semibold transition-colors px-3 py-1 rounded-lg hover:opacity-80"
+                style={{ color: config.accentColor, background: config.accentLight }}
               >
                 Remplir
               </button>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-              <span className={`inline-flex self-start items-center px-2.5 py-1 rounded-md text-xs font-semibold ${
-                isAgence
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-blue-800 text-blue-700'
-              }`}>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold" style={{ background: config.accentLight, color: config.accentColor }}>
                 {config.demoLabel}
               </span>
               <span className="text-xs text-slate-400 font-mono">
@@ -371,11 +425,12 @@ export default function LoginPage({ variant }: { variant: LoginVariant }) {
           </div>
 
           {/* Switch */}
-          <div className="mt-6 text-center text-sm text-slate-500">
+          <div className="mt-8 text-center text-sm text-slate-500">
             {config.switchText}{' '}
             <Link
               href={config.switchHref}
-              className={`font-semibold ${config.accentClass} ${config.accentHoverClass} transition-colors`}
+              className="font-semibold transition-colors hover:underline"
+              style={{ color: config.accentColor }}
             >
               {config.switchLink}
             </Link>

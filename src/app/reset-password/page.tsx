@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Lock, Eye, EyeOff, ArrowLeft, RefreshCw, CheckCircle } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowLeft, RefreshCw, CheckCircle, ShieldCheck } from 'lucide-react';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -16,6 +16,7 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,23 +63,30 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
+      {/* Subtle accent glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full opacity-20 blur-[150px] pointer-events-none" style={{ background: 'rgba(37,99,235,0.15)' }} />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-bold text-[#2563EB]">QRBag</h1>
+          <Link href="/" className="inline-flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl p-2.5 flex items-center justify-center bg-blue-50">
+              <img src="/logo.png" alt="QRBag" className="w-full h-full object-contain" />
+            </div>
           </Link>
-          <p className="text-slate-500 mt-2">Nouveau mot de passe</p>
+          <p className="text-slate-500 mt-3 text-sm">Nouveau mot de passe</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
           {!success ? (
             <>
               <div className="text-center mb-6">
-                <Lock className="w-12 h-12 text-[#2563EB] mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-800 mb-2">Définir un nouveau mot de passe</h2>
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck className="w-7 h-7 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Définir un nouveau mot de passe</h2>
                 <p className="text-slate-500 text-sm">
                   Entrez votre nouveau mot de passe ci-dessous.
                 </p>
@@ -86,50 +94,75 @@ function ResetPasswordContent() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-2">Nouveau mot de passe</label>
-                  <div className="relative">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nouveau mot de passe</label>
+                  <div className={`relative flex items-center rounded-xl border-2 transition-all duration-200 ${
+                    focusedField === 'password' ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+                  }`}>
+                    <div className={`pl-4 transition-colors ${focusedField === 'password' ? 'text-slate-900' : 'text-slate-400'}`}>
+                      <Lock className="w-[18px] h-[18px]" />
+                    </div>
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField(null)}
                       placeholder="••••••••"
                       required
-                      className="w-full px-4 py-3 pr-12 border border-slate-200 rounded-xl focus:outline-none focus:border-[#2563EB]"
+                      className="w-full bg-transparent border-none outline-none text-slate-900 placeholder-slate-400 py-3.5 px-3 text-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      className="pr-4 text-slate-400 hover:text-slate-600 transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-2">Confirmer le mot de passe</label>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-[#2563EB]"
-                  />
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Confirmer le mot de passe</label>
+                  <div className={`relative flex items-center rounded-xl border-2 transition-all duration-200 ${
+                    focusedField === 'confirmPassword' ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+                  }`}>
+                    <div className={`pl-4 transition-colors ${focusedField === 'confirmPassword' ? 'text-slate-900' : 'text-slate-400'}`}>
+                      <Lock className="w-[18px] h-[18px]" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onFocus={() => setFocusedField('confirmPassword')}
+                      onBlur={() => setFocusedField(null)}
+                      placeholder="••••••••"
+                      required
+                      className="w-full bg-transparent border-none outline-none text-slate-900 placeholder-slate-400 py-3.5 px-3 text-sm"
+                    />
+                  </div>
                 </div>
 
                 {error && (
-                  <p className="text-red-500 text-sm text-center">{error}</p>
+                  <div className="p-3.5 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                      <span className="text-red-500 text-xs">!</span>
+                    </div>
+                    {error}
+                  </div>
                 )}
 
                 <button
                   type="submit"
                   disabled={loading || !password || !confirmPassword}
-                  className="w-full py-3 bg-[#2563EB] text-white rounded-xl font-medium hover:bg-[#ff6600] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                    boxShadow: '0 8px 24px rgba(37,99,235,0.2)',
+                  }}
                 >
                   {loading ? (
                     <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin" />
                       Réinitialisation...
                     </>
                   ) : (
@@ -140,9 +173,11 @@ function ResetPasswordContent() {
             </>
           ) : (
             <div className="text-center py-4">
-              <CheckCircle className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Mot de passe réinitialisé !</h2>
-              <p className="text-slate-600 mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Mot de passe réinitialisé !</h2>
+              <p className="text-slate-600 text-sm mb-4">
                 Votre mot de passe a été modifié avec succès. Vous allez être redirigé vers la page de connexion.
               </p>
             </div>
@@ -150,7 +185,7 @@ function ResetPasswordContent() {
 
           {/* Back link */}
           <div className="mt-6 text-center">
-            <Link href="/login" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm">
+            <Link href="/login" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Retour à la connexion
             </Link>
@@ -164,8 +199,8 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-[#2563EB] animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
       </div>
     }>
       <ResetPasswordContent />

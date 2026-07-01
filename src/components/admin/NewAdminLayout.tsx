@@ -109,14 +109,8 @@ export default function AdminLayout({ children, title, subtitle, unreadMessages 
         `}>
           {/* Logo */}
           <div className="p-6 border-b border-white/10">
-            <Link href="/admin/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shadow-lg">
-                <QrCode className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="text-white font-bold text-xl tracking-tight">QRBag</span>
-                <span className="block text-xs text-white/60">Administration</span>
-              </div>
+            <Link href="/admin/dashboard" className="flex items-center">
+              <img src="/logo.png" alt="QRBag" className="w-10 h-10 object-contain" />
             </Link>
             <button
               className="lg:hidden absolute top-6 right-4 text-white/60 hover:text-white transition-colors"

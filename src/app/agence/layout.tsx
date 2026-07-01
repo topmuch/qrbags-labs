@@ -97,19 +97,10 @@ function Sidebar({ isOpen, setIsOpen, unreadMessages, onLogout, userName, agency
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         flex flex-col shadow-2xl
       `}>
-        {/* Logo */}
-        <div className="p-6 border-b border-white/10">
-          <Link href="/agence/tableau-de-bord" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shadow-lg">
-              <QrCode className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <span className="text-white font-bold text-xl tracking-tight">QRBag</span>
-              <span className="block text-xs text-white/60 font-medium">Espace Agence</span>
-            </div>
-          </Link>
+        {/* Close button (mobile) */}
+        <div className="p-4 lg:hidden flex justify-end">
           <button
-            className="lg:hidden absolute top-6 right-4 text-white/60 hover:text-white transition-colors"
+            className="text-white/60 hover:text-white transition-colors"
             onClick={() => setIsOpen(false)}
           >
             <X className="w-5 h-5" />

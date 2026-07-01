@@ -89,11 +89,7 @@ export default function AdminLayout({
           <div className="p-5 border-b border-[#1a1a3a]">
             <div className="flex items-center justify-between">
               <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shadow-lg" style={{ backgroundColor: SIDEBAR_COLOR }}>
-                  <QrCode className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-white font-bold text-xl tracking-tight">QRBag</span>
-                <span className="text-[10px] px-2 py-0.5 rounded text-white font-bold uppercase tracking-wide" style={{ backgroundColor: SIDEBAR_COLOR }}>Admin</span>
+                <img src="/logo.png" alt="QRBag" className="w-9 h-9 object-contain" />
               </Link>
               <button
                 className="lg:hidden text-[#94a3b8] hover:text-white transition-colors"

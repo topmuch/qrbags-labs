@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, ArrowLeft, Send, CheckCircle, RefreshCw } from 'lucide-react';
+import { Mail, ArrowLeft, Send, CheckCircle, RefreshCw, KeyRound } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +25,6 @@ export default function ForgotPasswordPage() {
       
       setSent(true);
     } catch {
-      // Still show success to prevent email enumeration
       setSent(true);
     } finally {
       setLoading(false);
@@ -32,54 +32,74 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
+      {/* Subtle accent glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full opacity-20 blur-[150px] pointer-events-none" style={{ background: 'rgba(37,99,235,0.15)' }} />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-bold text-[#2563EB]">QRBag</h1>
+          <Link href="/" className="inline-flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl p-2.5 flex items-center justify-center bg-blue-50">
+              <img src="/logo.png" alt="QRBag" className="w-full h-full object-contain" />
+            </div>
           </Link>
-          <p className="text-slate-500 mt-2">Réinitialisation du mot de passe</p>
+          <p className="text-slate-500 mt-3 text-sm">Réinitialisation du mot de passe</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
           {!sent ? (
             <>
               <div className="text-center mb-6">
-                <Mail className="w-12 h-12 text-[#2563EB] mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-800 mb-2">Mot de passe oublié ?</h2>
-                <p className="text-slate-500 text-sm">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                  <KeyRound className="w-7 h-7 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Mot de passe oublié ?</h2>
+                <p className="text-slate-500 text-sm leading-relaxed">
                   Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    required
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-[#2563EB]"
-                  />
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <div className={`relative flex items-center rounded-xl border-2 transition-all duration-200 ${
+                    focusedField === 'email' ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+                  }`}>
+                    <div className={`pl-4 transition-colors ${focusedField === 'email' ? 'text-slate-900' : 'text-slate-400'}`}>
+                      <Mail className="w-[18px] h-[18px]" />
+                    </div>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      placeholder="votre@email.com"
+                      required
+                      className="w-full bg-transparent border-none outline-none text-slate-900 placeholder-slate-400 py-3.5 px-3 text-sm"
+                    />
+                  </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading || !email}
-                  className="w-full py-3 bg-[#2563EB] text-white rounded-xl font-medium hover:bg-[#ff6600] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                    boxShadow: '0 8px 24px rgba(37,99,235,0.2)',
+                  }}
                 >
                   {loading ? (
                     <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin" />
                       Envoi en cours...
                     </>
                   ) : (
                     <>
-                      <Send className="w-5 h-5" />
+                      <Send className="w-4 h-4" />
                       Envoyer le lien
                     </>
                   )}
@@ -88,14 +108,16 @@ export default function ForgotPasswordPage() {
             </>
           ) : (
             <div className="text-center py-4">
-              <CheckCircle className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Email envoyé !</h2>
-              <p className="text-slate-600 mb-6">
-                Si un compte existe avec l&apos;adresse <strong>{email}</strong>, vous recevrez un email avec les instructions pour réinitialiser votre mot de passe.
+              <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Email envoyé !</h2>
+              <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                Si un compte existe avec l&apos;adresse <strong className="text-slate-900">{email}</strong>, vous recevrez un email avec les instructions pour réinitialiser votre mot de passe.
               </p>
               <button
                 onClick={() => setSent(false)}
-                className="text-[#2563EB] font-medium hover:underline"
+                className="text-blue-600 font-medium hover:underline text-sm"
               >
                 Renvoyer un autre email
               </button>
@@ -104,7 +126,7 @@ export default function ForgotPasswordPage() {
 
           {/* Back link */}
           <div className="mt-6 text-center">
-            <Link href="/login" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm">
+            <Link href="/login" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Retour à la connexion
             </Link>
