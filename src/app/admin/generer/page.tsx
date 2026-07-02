@@ -20,7 +20,9 @@ import {
   Building2,
   Package,
   AlertCircle,
-  Shield
+  Shield,
+  Archive,
+  Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -44,6 +46,8 @@ export default function GenererQRPage() {
   const [qrGenerating, setQrGenerating] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [lastGeneratedRefs, setLastGeneratedRefs] = useState<string[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
   
   // Context selection
   const [context, setContext] = useState<GenerationContext>('agency');
@@ -124,6 +128,66 @@ export default function GenererQRPage() {
     return true;
   };
 
+  // Export generated QR codes as ZIP
+  const handleExportGenerated = async () => {
+    if (lastGeneratedRefs.length === 0) return;
+    setIsExporting(true);
+    try {
+      // Find the setId from the first reference
+      // For agency mode, we need to fetch the baggages to get setIds
+      const response = await fetch('/api/admin/baggages/generate?limit=2000');
+      const data = await response.json();
+      const baggages = data.baggages || [];
+
+      // Find setIds that contain our generated references
+      const refSet = new Set(lastGeneratedRefs);
+      const matchingSetIds = new Set<string>();
+      for (const baggage of baggages) {
+        if (refSet.has(baggage.reference) && baggage.setId) {
+          matchingSetIds.add(baggage.setId);
+        }
+      }
+
+      if (matchingSetIds.size === 0) {
+        alert('Impossible de trouver les sets générés');
+        return;
+      }
+
+      // Call the export ZIP API
+      const exportResponse = await fetch('/api/admin/baggages/export-zip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ setIds: Array.from(matchingSetIds) }),
+      });
+
+      if (!exportResponse.ok) {
+        const errorData = await exportResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Export failed');
+      }
+
+      // Get filename
+      const contentDisposition = exportResponse.headers.get('Content-Disposition');
+      let filename = 'QRBag-export.zip';
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match) filename = decodeURIComponent(match[1]);
+      }
+
+      const blob = await exportResponse.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting:', error);
+      alert('Erreur lors de l\'export ZIP');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleGenerateQR = async () => {
     setErrorMessage('');
     
@@ -165,7 +229,8 @@ export default function GenererQRPage() {
       const data = await response.json();
       
       if (response.ok) {
-        setSuccessMessage(`✅ ${data.generated} codes QR générés avec succès !`);
+        setSuccessMessage(`${data.generated} codes QR générés avec succès !`);
+        setLastGeneratedRefs(data.references || []);
         // Reset individual form
         if (context === 'individual') {
           setIndividualForm({
@@ -176,7 +241,10 @@ export default function GenererQRPage() {
             baggageCount: 1,
           });
         }
-        setTimeout(() => setSuccessMessage(''), 5000);
+        setTimeout(() => {
+          setSuccessMessage('');
+          setLastGeneratedRefs([]);
+        }, 10000);
       } else {
         setErrorMessage(data.error || 'Erreur lors de la génération');
       }
@@ -198,9 +266,39 @@ export default function GenererQRPage() {
 
       {/* Success Message */}
       {successMessage && (
-        <div className="mb-6 bg-emerald-50 dark:bg-blue-600/10 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-blue-500 px-4 py-3 rounded-xl flex items-center gap-2">
-          <CheckCircle className="w-5 h-5" />
-          {successMessage}
+        <div className="mb-6 bg-emerald-50 dark:bg-emerald-600/10 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 py-4 rounded-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="w-5 h-5" />
+            <span className="font-medium">{successMessage}</span>
+          </div>
+          {lastGeneratedRefs.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                onClick={handleExportGenerated}
+                disabled={isExporting}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e7e34] to-[#0d5e34] text-white rounded-lg hover:from-[#228b22] hover:to-[#1e7e34] transition-all text-sm shadow-lg shadow-green-900/20 disabled:opacity-50"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Export en cours...
+                  </>
+                ) : (
+                  <>
+                    <Archive className="w-4 h-4" />
+                    Exporter en ZIP ({lastGeneratedRefs.length} QR)
+                  </>
+                )}
+              </button>
+              <a
+                href="/admin/qrcodes"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              >
+                <QrCode className="w-4 h-4" />
+                Voir tous les QR codes
+              </a>
+            </div>
+          )}
         </div>
       )}
 

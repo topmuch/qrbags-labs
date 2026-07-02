@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Search,
@@ -18,7 +17,11 @@ import {
   X,
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  FileArchive,
+  Archive,
+  Filter,
+  Loader2,
 } from "lucide-react";
 
 interface QRSet {
@@ -32,6 +35,7 @@ interface QRSet {
   references: string[];
   status: string;
   travelerName: string | null;
+  baggageIds: string[];
 }
 
 interface Stats {
@@ -41,8 +45,12 @@ interface Stats {
   voyageurSets: number;
 }
 
+interface Agency {
+  id: string;
+  name: string;
+}
+
 export default function QRCodesPage() {
-  const router = useRouter();
   const qrRef = useRef<HTMLDivElement>(null);
   
   const [sets, setSets] = useState<QRSet[]>([]);
@@ -59,11 +67,27 @@ export default function QRCodesPage() {
   // Modals
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [selectedSet, setSelectedSet] = useState<QRSet | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Selection for bulk export
+  const [selectedSetIds, setSelectedSetIds] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+
+  // Export modal state
+  const [exportAgencies, setExportAgencies] = useState<Agency[]>([]);
+  const [exportForm, setExportForm] = useState({
+    mode: 'selected' as 'selected' | 'agency' | 'type',
+    agencyId: '',
+    type: 'hajj' as 'hajj' | 'voyageur',
+  });
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState('');
+
   useEffect(() => {
     fetchSets();
+    fetchAgencies();
   }, [typeFilter, search]);
 
   const fetchSets = async () => {
@@ -83,6 +107,48 @@ export default function QRCodesPage() {
       setLoading(false);
     }
   };
+
+  const fetchAgencies = async () => {
+    try {
+      const res = await fetch('/api/admin/agencies');
+      const data = await res.json();
+      setExportAgencies(data.agencies || []);
+    } catch (error) {
+      console.error('Error fetching agencies:', error);
+    }
+  };
+
+  // Selection handlers
+  const toggleSetSelection = useCallback((setId: string) => {
+    setSelectedSetIds(prev => {
+      const next = new Set(prev);
+      if (next.has(setId)) {
+        next.delete(setId);
+      } else {
+        next.add(setId);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectAll) {
+      setSelectedSetIds(new Set());
+      setSelectAll(false);
+    } else {
+      setSelectedSetIds(new Set(sets.map(s => s.setId)));
+      setSelectAll(true);
+    }
+  }, [selectAll, sets]);
+
+  // Keep selectAll in sync
+  useEffect(() => {
+    if (sets.length > 0 && selectedSetIds.size === sets.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedSetIds, sets.length]);
 
   const handleDeleteSet = async () => {
     if (!selectedSet) return;
@@ -104,93 +170,33 @@ export default function QRCodesPage() {
     setSelectedSet(set);
 
     try {
-      // Create a canvas with all QR codes
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas not supported');
+      // Use server-side ZIP export for single set
+      const response = await fetch('/api/admin/baggages/export-zip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ setId: set.setId }),
+      });
 
-      const qrSize = 300;
-      const padding = 40;
-      const headerHeight = 100;
-      const footerHeight = 60;
-
-      // Calculate dimensions
-      const cols = Math.min(set.qrCount, 3);
-      const rows = Math.ceil(set.qrCount / 3);
-
-      canvas.width = cols * qrSize + (cols + 1) * padding;
-      canvas.height = headerHeight + rows * qrSize + (rows + 1) * padding + footerHeight;
-
-      // Background
-      ctx.fillStyle = '#080c1a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Header
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('QRBag - QR Codes', canvas.width / 2, 40);
-
-      ctx.font = '16px Arial';
-      ctx.fillStyle = '#a0a8b8';
-      ctx.fillText(`${set.setId} | ${set.type === 'hajj' ? 'Hajj 2026' : 'Voyageur'} | ${set.qrCount} QR`, canvas.width / 2, 70);
-
-      // Generate QR codes as images
-      for (let i = 0; i < set.references.length; i++) {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
-        const x = padding + col * (qrSize + padding);
-        const y = headerHeight + padding + row * (qrSize + padding);
-
-        // Draw QR background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x, y, qrSize, qrSize);
-
-        // Draw QR code using SVG
-        const qrUrl = `${window.location.origin}/scan/${set.references[i]}`;
-        const svgString = `
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-            ${generateQRCodeSVG(qrUrl, set.type)}
-          </svg>
-        `;
-
-        const img = new Image();
-        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(svgBlob);
-
-        await new Promise<void>((resolve) => {
-          img.onload = () => {
-            ctx.drawImage(img, x + 20, y + 20, qrSize - 40, qrSize - 40);
-            
-            // Draw reference text
-            ctx.fillStyle = set.type === 'hajj' ? '#0d5e34' : '#1D4ED8';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(set.references[i], x + qrSize / 2, y + qrSize - 15);
-            
-            URL.revokeObjectURL(url);
-            resolve();
-          };
-          img.onerror = () => {
-            URL.revokeObjectURL(url);
-            resolve();
-          };
-          img.src = url;
-        });
+      if (!response.ok) {
+        throw new Error('Export failed');
       }
 
-      // Footer
-      ctx.fillStyle = '#a0a8b8';
-      ctx.font = '12px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('QRBag - Protégez vos bagages, en toute sérénité.', canvas.width / 2, canvas.height - 20);
+      // Get the filename from Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `QRBag-${set.setId}.zip`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match) filename = decodeURIComponent(match[1]);
+      }
 
-      // Download
+      // Download the ZIP
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.download = `QRBag-${set.setId}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = url;
+      link.download = filename;
       link.click();
-
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading:', error);
       alert('Erreur lors du téléchargement');
@@ -200,11 +206,75 @@ export default function QRCodesPage() {
     }
   };
 
-  // Simple QR code SVG generator (fallback)
-  const generateQRCodeSVG = (url: string, type: string) => {
-    const color = type === 'hajj' ? '#0d5e34' : '#1D4ED8';
-    return `<rect width="200" height="200" fill="white"/>
-      <text x="100" y="100" text-anchor="middle" fill="${color}" font-size="10">${url.slice(-20)}</text>`;
+  // Bulk ZIP export
+  const handleExportZip = async () => {
+    setIsExporting(true);
+    setExportProgress('Préparation de l\'export...');
+
+    try {
+      let payload: Record<string, unknown>;
+
+      if (exportForm.mode === 'selected') {
+        if (selectedSetIds.size === 0) {
+          alert('Veuillez sélectionner au moins un set de QR codes');
+          setIsExporting(false);
+          return;
+        }
+        payload = { setIds: Array.from(selectedSetIds) };
+      } else if (exportForm.mode === 'agency') {
+        if (!exportForm.agencyId) {
+          alert('Veuillez sélectionner une agence');
+          setIsExporting(false);
+          return;
+        }
+        payload = { agencyId: exportForm.agencyId };
+      } else {
+        payload = { type: exportForm.type, agencyId: '__all__' };
+      }
+
+      setExportProgress('Génération des QR codes...');
+
+      const response = await fetch('/api/admin/baggages/export-zip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Export failed');
+      }
+
+      setExportProgress('Téléchargement du fichier ZIP...');
+
+      // Get filename
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'QRBag-export.zip';
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match) filename = decodeURIComponent(match[1]);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      setExportProgress('Export terminé !');
+      setTimeout(() => {
+        setShowExportModal(false);
+        setExportProgress('');
+        setSelectedSetIds(new Set());
+      }, 1500);
+    } catch (error) {
+      console.error('Error exporting ZIP:', error);
+      alert('Erreur lors de l\'export ZIP: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleShareSet = async (set: QRSet) => {
@@ -249,6 +319,11 @@ export default function QRCodesPage() {
     { title: 'Voyageur', value: stats.voyageurSets, icon: Luggage, color: 'text-blue-600' },
   ];
 
+  // Calculate total QR in selection
+  const selectedQrCount = sets
+    .filter(s => selectedSetIds.has(s.setId))
+    .reduce((sum, s) => sum + s.qrCount, 0);
+
   return (
     <div className="min-h-screen bg-[#080c1a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -266,13 +341,23 @@ export default function QRCodesPage() {
               <p className="text-[#a0a8b8] text-sm">Gérez vos sets de QR codes</p>
             </div>
           </div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#b8860b] text-white rounded-lg hover:bg-[#3b82f6] transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Générer nouveau
-          </Link>
+          <div className="flex gap-3">
+            {/* Export ZIP Button */}
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e7e34] to-[#0d5e34] text-white rounded-lg hover:from-[#228b22] hover:to-[#1e7e34] transition-all shadow-lg shadow-green-900/30"
+            >
+              <Archive className="w-4 h-4" />
+              Export ZIP
+            </button>
+            <Link
+              href="/admin/generer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#b8860b] text-white rounded-lg hover:bg-[#3b82f6] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Générer nouveau
+            </Link>
+          </div>
         </div>
 
         {/* KPI Cards */}
@@ -290,6 +375,36 @@ export default function QRCodesPage() {
             </div>
           ))}
         </div>
+
+        {/* Selection Info Bar */}
+        {selectedSetIds.size > 0 && (
+          <div className="mb-4 px-5 py-3 bg-gradient-to-r from-[#0d5e34] to-[#1e7e34] rounded-xl border border-[#0d5e34] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-white" />
+              <span className="text-white font-medium">
+                {selectedSetIds.size} set(s) sélectionné(s) — {selectedQrCount} QR codes
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowExportModal(true);
+                  setExportForm(prev => ({ ...prev, mode: 'selected' }));
+                }}
+                className="px-3 py-1.5 bg-white text-[#0d5e34] rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors flex items-center gap-1"
+              >
+                <Archive className="w-3.5 h-3.5" />
+                Exporter ZIP
+              </button>
+              <button
+                onClick={() => setSelectedSetIds(new Set())}
+                className="px-3 py-1.5 bg-white/10 text-white rounded-lg text-sm hover:bg-white/20 transition-colors"
+              >
+                Tout désélectionner
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -321,7 +436,7 @@ export default function QRCodesPage() {
         </div>
 
         {/* QR Sets List */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {loading ? (
             <div className="text-center py-12">
               <div className="w-12 h-12 border-2 border-[#b8860b]/30 border-t-[#b8860b] rounded-full animate-spin mx-auto mb-4" />
@@ -338,94 +453,119 @@ export default function QRCodesPage() {
               </p>
             </div>
           ) : (
-            sets.map((set) => (
-              <div
-                key={set.id}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 bg-[#0a0f2c] rounded-xl border border-[#1a1a3a] gap-4"
-              >
-                {/* Left: Info */}
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    set.type === 'hajj' ? 'bg-[#0d5e34]' : 'bg-[#7a3e00]'
-                  }`}>
-                    {set.type === 'hajj' ? (
-                      <Plane className="h-5 w-5 text-white" />
-                    ) : (
-                      <Luggage className="h-5 w-5 text-white" />
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-white">{set.setId}</h3>
-                      <span className="px-2 py-0.5 bg-[#0d5e34] text-[#e0e6f0] text-xs rounded">
-                        Nouveau
-                      </span>
-                    </div>
-                    <div className="text-[#a0a8b8] text-sm flex flex-wrap gap-3">
-                      <span>👤 {set.travelerName || '1 voyageur'}</span>
-                      <span>🔢 {set.qrCount} QR</span>
-                      <span>📅 {formatDate(set.createdAt)}</span>
-                      {set.agencyName && <span>{set.agencyName}</span>}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right: Actions */}
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <span className="px-2 py-1 bg-[#0d152a] text-[#a0a8b8] text-xs rounded hidden sm:inline">
-                    {set.status}
-                  </span>
-                  
-                  {/* View Button */}
-                  <button
-                    onClick={() => {
-                      setSelectedSet(set);
-                      setShowDetailModal(true);
-                    }}
-                    className="w-10 h-10 rounded-lg bg-[#0d5e34] flex items-center justify-center text-white hover:bg-[#1e7e34] transition-colors"
-                    title="Voir détails"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-
-                  {/* Download Button */}
-                  <button
-                    onClick={() => handleDownloadSet(set)}
-                    disabled={isDownloading && selectedSet?.id === set.id}
-                    className="w-10 h-10 rounded-lg bg-[#b8860b] flex items-center justify-center text-white hover:bg-[#3b82f6] transition-colors disabled:opacity-50"
-                    title="Télécharger"
-                  >
-                    {isDownloading && selectedSet?.id === set.id ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Download className="h-4 w-4" />
-                    )}
-                  </button>
-
-                  {/* Share Button */}
-                  <button
-                    onClick={() => handleShareSet(set)}
-                    className="w-10 h-10 rounded-lg bg-[#1e7e34] flex items-center justify-center text-white hover:bg-[#228b22] transition-colors"
-                    title="Partager"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </button>
-
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => {
-                      setSelectedSet(set);
-                      setShowDeleteModal(true);
-                    }}
-                    className="w-10 h-10 rounded-lg bg-[#7a1e1e] flex items-center justify-center text-white hover:bg-[#9c2727] transition-colors"
-                    title="Supprimer"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+            <>
+              {/* Select All Row */}
+              <div className="flex items-center gap-3 px-5 py-2 bg-[#0d152a] rounded-lg border border-[#1a2238]">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 rounded border-[#1a2238] bg-[#080c1a] text-[#b8860b] focus:ring-[#b8860b] accent-[#b8860b]"
+                />
+                <span className="text-[#a0a8b8] text-sm">
+                  Tout sélectionner ({sets.length} sets)
+                </span>
               </div>
-            ))
+
+              {sets.map((set) => (
+                <div
+                  key={set.id}
+                  className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-xl border gap-4 transition-colors ${
+                    selectedSetIds.has(set.setId)
+                      ? 'bg-[#0d5e34]/10 border-[#0d5e34]/50'
+                      : 'bg-[#0a0f2c] border-[#1a1a3a]'
+                  }`}
+                >
+                  {/* Left: Checkbox + Info */}
+                  <div className="flex items-start gap-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedSetIds.has(set.setId)}
+                      onChange={() => toggleSetSelection(set.setId)}
+                      className="mt-1 w-4 h-4 rounded border-[#1a2238] bg-[#080c1a] text-[#b8860b] focus:ring-[#b8860b] accent-[#b8860b]"
+                    />
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      set.type === 'hajj' ? 'bg-[#0d5e34]' : 'bg-[#7a3e00]'
+                    }`}>
+                      {set.type === 'hajj' ? (
+                        <Plane className="h-5 w-5 text-white" />
+                      ) : (
+                        <Luggage className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-white">{set.setId}</h3>
+                        <span className="px-2 py-0.5 bg-[#0d5e34] text-[#e0e6f0] text-xs rounded">
+                          Nouveau
+                        </span>
+                      </div>
+                      <div className="text-[#a0a8b8] text-sm flex flex-wrap gap-3">
+                        <span>👤 {set.travelerName || '1 voyageur'}</span>
+                        <span>🔢 {set.qrCount} QR</span>
+                        <span>📅 {formatDate(set.createdAt)}</span>
+                        {set.agencyName && <span>🏢 {set.agencyName}</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <span className="px-2 py-1 bg-[#0d152a] text-[#a0a8b8] text-xs rounded hidden sm:inline">
+                      {set.status}
+                    </span>
+                    
+                    {/* View Button */}
+                    <button
+                      onClick={() => {
+                        setSelectedSet(set);
+                        setShowDetailModal(true);
+                      }}
+                      className="w-10 h-10 rounded-lg bg-[#0d5e34] flex items-center justify-center text-white hover:bg-[#1e7e34] transition-colors"
+                      title="Voir détails"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+
+                    {/* Download ZIP Button */}
+                    <button
+                      onClick={() => handleDownloadSet(set)}
+                      disabled={isDownloading && selectedSet?.id === set.id}
+                      className="w-10 h-10 rounded-lg bg-[#b8860b] flex items-center justify-center text-white hover:bg-[#3b82f6] transition-colors disabled:opacity-50"
+                      title="Télécharger ZIP"
+                    >
+                      {isDownloading && selectedSet?.id === set.id ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <FileArchive className="h-4 w-4" />
+                      )}
+                    </button>
+
+                    {/* Share Button */}
+                    <button
+                      onClick={() => handleShareSet(set)}
+                      className="w-10 h-10 rounded-lg bg-[#1e7e34] flex items-center justify-center text-white hover:bg-[#228b22] transition-colors"
+                      title="Partager"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => {
+                        setSelectedSet(set);
+                        setShowDeleteModal(true);
+                      }}
+                      className="w-10 h-10 rounded-lg bg-[#7a1e1e] flex items-center justify-center text-white hover:bg-[#9c2727] transition-colors"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </>
           )}
         </div>
 
@@ -442,6 +582,224 @@ export default function QRCodesPage() {
           </Link>
         </div>
       </div>
+
+      {/* Export ZIP Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="bg-[#0d152a] border border-[#1a2238] rounded-xl max-w-lg w-full">
+            <div className="flex items-center justify-between p-6 border-b border-[#1a2238]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-[#1e7e34] to-[#0d5e34] rounded-lg flex items-center justify-center">
+                  <Archive className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white">Export ZIP</h2>
+                  <p className="text-[#a0a8b8] text-sm">QR codes organisés par passager</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if (!isExporting) {
+                    setShowExportModal(false);
+                    setExportProgress('');
+                  }
+                }}
+                className="p-2 rounded-lg hover:bg-[#1a2238] transition-colors"
+              >
+                <X className="w-5 h-5 text-[#a0a8b8]" />
+              </button>
+            </div>
+            <div className="p-6 space-y-5">
+              {/* Export Mode Selection */}
+              <div>
+                <label className="text-[#a0a8b8] text-sm mb-3 block">Mode d'export</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    onClick={() => setExportForm(prev => ({ ...prev, mode: 'selected' }))}
+                    className={`p-3 rounded-xl border text-center transition-all ${
+                      exportForm.mode === 'selected'
+                        ? 'bg-[#0d5e34] border-[#0d5e34] text-white'
+                        : 'bg-[#080c1a] border-[#1a2238] text-[#a0a8b8] hover:border-[#2a2a3a]'
+                    }`}
+                  >
+                    <CheckCircle className="w-5 h-5 mx-auto mb-1" />
+                    <p className="text-xs font-medium">Sélection</p>
+                    <p className="text-[10px] opacity-70">{selectedSetIds.size} sets</p>
+                  </button>
+                  <button
+                    onClick={() => setExportForm(prev => ({ ...prev, mode: 'agency' }))}
+                    className={`p-3 rounded-xl border text-center transition-all ${
+                      exportForm.mode === 'agency'
+                        ? 'bg-[#0d5e34] border-[#0d5e34] text-white'
+                        : 'bg-[#080c1a] border-[#1a2238] text-[#a0a8b8] hover:border-[#2a2a3a]'
+                    }`}
+                  >
+                    <Filter className="w-5 h-5 mx-auto mb-1" />
+                    <p className="text-xs font-medium">Par agence</p>
+                    <p className="text-[10px] opacity-70">Tous les QR</p>
+                  </button>
+                  <button
+                    onClick={() => setExportForm(prev => ({ ...prev, mode: 'type' }))}
+                    className={`p-3 rounded-xl border text-center transition-all ${
+                      exportForm.mode === 'type'
+                        ? 'bg-[#0d5e34] border-[#0d5e34] text-white'
+                        : 'bg-[#080c1a] border-[#1a2238] text-[#a0a8b8] hover:border-[#2a2a3a]'
+                    }`}
+                  >
+                    <QrCode className="w-5 h-5 mx-auto mb-1" />
+                    <p className="text-xs font-medium">Par type</p>
+                    <p className="text-[10px] opacity-70">Hajj/Voyageur</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Agency selection */}
+              {exportForm.mode === 'agency' && (
+                <div>
+                  <label className="text-[#a0a8b8] text-sm mb-2 block">Agence</label>
+                  <select
+                    value={exportForm.agencyId}
+                    onChange={(e) => setExportForm(prev => ({ ...prev, agencyId: e.target.value }))}
+                    className="w-full bg-[#080c1a] border border-[#1a2238] rounded-lg py-3 px-4 text-[#e0e6f0] focus:outline-none focus:border-[#b8860b]/50"
+                  >
+                    <option value="">Sélectionner une agence</option>
+                    {exportAgencies.map(agency => (
+                      <option key={agency.id} value={agency.id}>{agency.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Type selection */}
+              {exportForm.mode === 'type' && (
+                <div>
+                  <label className="text-[#a0a8b8] text-sm mb-2 block">Type de voyage</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setExportForm(prev => ({ ...prev, type: 'hajj' }))}
+                      className={`p-3 rounded-xl border text-center transition-all ${
+                        exportForm.type === 'hajj'
+                          ? 'bg-[#0d5e34] border-[#0d5e34] text-white'
+                          : 'bg-[#080c1a] border-[#1a2238] text-[#a0a8b8]'
+                      }`}
+                    >
+                      <Plane className="w-5 h-5 mx-auto mb-1" />
+                      <p className="text-xs font-medium">Hajj</p>
+                    </button>
+                    <button
+                      onClick={() => setExportForm(prev => ({ ...prev, type: 'voyageur' }))}
+                      className={`p-3 rounded-xl border text-center transition-all ${
+                        exportForm.type === 'voyageur'
+                          ? 'bg-[#1D4ED8] border-[#1D4ED8] text-white'
+                          : 'bg-[#080c1a] border-[#1a2238] text-[#a0a8b8]'
+                      }`}
+                    >
+                      <Luggage className="w-5 h-5 mx-auto mb-1" />
+                      <p className="text-xs font-medium">Voyageur</p>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Export Summary */}
+              <div className="bg-[#080c1a] rounded-xl p-4 border border-[#1a2238]">
+                <h4 className="text-[#a0a8b8] text-sm mb-2">Résumé de l'export</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-[#a0a8b8]">Mode</span>
+                    <span className="text-white">
+                      {exportForm.mode === 'selected' 
+                        ? `${selectedSetIds.size} sets sélectionnés`
+                        : exportForm.mode === 'agency'
+                          ? exportAgencies.find(a => a.id === exportForm.agencyId)?.name || 'Non défini'
+                          : exportForm.type === 'hajj' ? 'Tous les Hajj' : 'Tous les Voyageurs'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#a0a8b8]">QR codes estimés</span>
+                    <span className="text-white font-bold">
+                      {exportForm.mode === 'selected'
+                        ? selectedQrCount
+                        : exportForm.mode === 'agency'
+                          ? 'Tous les QR de l\'agence'
+                          : exportForm.type === 'hajj'
+                            ? stats.hajjSets * 3
+                            : stats.voyageurSets * 3
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#a0a8b8]">Format</span>
+                    <span className="text-white">ZIP (PNG par passager)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Structure preview */}
+              <div className="bg-[#080c1a] rounded-xl p-4 border border-[#1a2238]">
+                <h4 className="text-[#a0a8b8] text-sm mb-2">Structure du ZIP</h4>
+                <pre className="text-[#0d5e34] text-xs leading-5 font-mono">
+{`QRBag-export.zip
+├── Passager-001-HAJJ-2026-ABCD/
+│   ├── bagage-1-cabine-HAJJ26-XXXXXX.png
+│   ├── bagage-2-soute-HAJJ26-YYYYYY.png
+│   ├── bagage-3-soute-HAJJ26-ZZZZZZ.png
+│   └── README.txt
+├── Passager-002-.../
+│   └── ...
+└── _MANIFEST.txt`}
+                </pre>
+              </div>
+
+              {/* Progress */}
+              {exportProgress && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-[#080c1a] rounded-xl border border-[#1a2238]">
+                  {isExporting ? (
+                    <Loader2 className="w-5 h-5 text-[#0d5e34] animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5 text-[#0d5e34]" />
+                  )}
+                  <span className="text-[#e0e6f0] text-sm">{exportProgress}</span>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (!isExporting) {
+                      setShowExportModal(false);
+                      setExportProgress('');
+                    }
+                  }}
+                  disabled={isExporting}
+                  className="flex-1 py-3 bg-[#1a2238] text-[#e0e6f0] rounded-lg hover:bg-[#2a2a3a] transition-colors disabled:opacity-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleExportZip}
+                  disabled={isExporting}
+                  className="flex-1 py-3 bg-gradient-to-r from-[#1e7e34] to-[#0d5e34] text-white rounded-lg hover:from-[#228b22] hover:to-[#1e7e34] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-green-900/30"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Export en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="w-4 h-4" />
+                      Exporter en ZIP
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Detail Modal */}
       {showDetailModal && selectedSet && (
@@ -511,8 +869,8 @@ export default function QRCodesPage() {
                   onClick={() => handleDownloadSet(selectedSet)}
                   className="flex-1 py-3 bg-[#b8860b] text-white rounded-lg hover:bg-[#3b82f6] transition-colors flex items-center justify-center gap-2"
                 >
-                  <Download className="w-4 h-4" />
-                  Télécharger tout
+                  <FileArchive className="w-4 h-4" />
+                  Télécharger ZIP
                 </button>
                 <button
                   onClick={() => handleShareSet(selectedSet)}
