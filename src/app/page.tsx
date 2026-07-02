@@ -441,7 +441,7 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* Feature cards - Full image with text overlay */}
+      {/* Feature cards - Full image with text overlay, clickable */}
       <div className="bg-white border-t border-slate-100 py-10 mt-4">
         <div className="max-w-7xl mx-auto px-5 sm:px-6">
           <div className="flex flex-wrap justify-center gap-4 sm:gap-5">
@@ -450,31 +450,37 @@ function HeroSection() {
                 image: '/images/landing-v2/features/sans-app.jpg',
                 title: 'Sans application',
                 subtitle: 'Un scan suffit',
+                href: '/fonctionnalites/sans-application',
               },
               {
                 image: '/images/landing-v2/features/sans-batterie.jpg',
                 title: 'Sans batterie',
                 subtitle: 'Autonome à 100%',
+                href: '/fonctionnalites/sans-batterie',
               },
               {
                 image: '/images/landing-v2/features/geolocalisation.jpg',
                 title: 'Géolocalisation',
                 subtitle: 'Temps réel',
+                href: '/fonctionnalites/geolocalisation',
               },
               {
                 image: '/images/landing-v2/features/securise-rgpd.jpg',
                 title: 'Sécurisé RGPD',
                 subtitle: 'Données protégées',
+                href: '/fonctionnalites/securite-rgpd',
               },
               {
                 image: '/images/landing-v2/features/alertes-whatsapp.jpg',
                 title: 'Alertes WhatsApp',
                 subtitle: 'Notification instantanée',
+                href: '/fonctionnalites/alertes-whatsapp',
               },
             ].map((item, idx) => (
-              <div
+              <Link
                 key={item.title}
-                className="group relative w-[191px] h-[254px] rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-default"
+                href={item.href}
+                className="group relative w-[191px] h-[254px] rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer"
               >
                 {/* Full background image */}
                 <Image
@@ -494,7 +500,7 @@ function HeroSection() {
                 <p className="absolute bottom-4 left-0 right-0 text-center text-white/90 text-xs drop-shadow-md px-2">
                   {item.subtitle}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
