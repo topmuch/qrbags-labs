@@ -121,10 +121,10 @@ function Navigation() {
   }, []);
 
   const navLinks = [
-    { label: 'Solutions', href: '/#solutions' },
-    { label: 'Comment ça marche', href: '/#comment' },
+    { label: 'Accueil', href: '/' },
+    { label: 'À propos', href: '/#comment' },
     { label: 'Tarifs', href: '/#tarifs' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Contactez-nous', href: '/contact' },
   ];
 
   return (
@@ -132,7 +132,7 @@ function Navigation() {
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[72px]">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <img src="/logo.png" alt="QRBag" className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+            <img src="/logo.png" alt="QRBag" className="h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
@@ -302,11 +302,11 @@ function HeroSection() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
                   </span>
-                  <span className="text-sm font-semibold text-blue-700">{slide.badge}</span>
+                  <span className="text-base font-semibold text-blue-700">{slide.badge}</span>
                 </div>
 
                 {/* Title */}
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-[1.05] tracking-[-0.03em]">
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 mb-6 leading-[1.05] tracking-[-0.03em]">
                   {slide.title}
                   <br />
                   <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
@@ -315,7 +315,7 @@ function HeroSection() {
                 </h1>
 
                 {/* Subtitle */}
-                <p className="text-lg text-slate-500 max-w-xl leading-relaxed mb-8">
+                <p className="text-xl text-slate-500 max-w-xl leading-relaxed mb-8">
                   {slide.subtitle}
                 </p>
 
@@ -339,8 +339,8 @@ function HeroSection() {
                 <div className="flex gap-8">
                   {slide.stats.map((stat, i) => (
                     <div key={i}>
-                      <div className="text-2xl font-extrabold text-slate-900">{stat.value}</div>
-                      <div className="text-xs text-slate-500 font-medium mt-0.5">{stat.label}</div>
+                      <div className="text-3xl font-extrabold text-slate-900">{stat.value}</div>
+                      <div className="text-sm text-slate-500 font-medium mt-0.5">{stat.label}</div>
                     </div>
                   ))}
                 </div>
@@ -871,7 +871,7 @@ function Footer() {
       <div className="max-w-6xl mx-auto px-5">
         <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-12">
           <div className="lg:col-span-2">
-            <div className="mb-5"><img src="/logo.png" alt="QRBag" className="h-11 w-auto object-contain" /></div>
+            <div className="mb-5"><img src="/logo.png" alt="QRBag" className="h-14 w-auto object-contain" /></div>
             <p className="text-base leading-relaxed max-w-xs text-white/60 mb-7">Protection intelligente des bagages pour voyageurs et pèlerins.</p>
             <div className="flex items-center gap-2.5">
               {[{ icon: Facebook, href: 'https://facebook.com/qrbag', label: 'Facebook' }, { icon: Instagram, href: 'https://instagram.com/qrbag', label: 'Instagram' }, { icon: Twitter, href: 'https://twitter.com/qrbag', label: 'Twitter' }].map(s => (
