@@ -105,28 +105,8 @@ function FadeIn({ children, className, delay = 0, direction = 'up' }: { children
   );
 }
 
-/* ──────────────────────────────────────────────
-   Parallax Section Wrapper
-   ────────────────────────────────────────────── */
-function ParallaxSection({ children, className, speed = 0.3 }: { children: React.ReactNode; className?: string; speed?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start']
-  });
-  const y = useTransform(scrollYProgress, [0, 1], [0, speed * 100]);
-
-  return (
-    <section ref={ref} className={className}>
-      <motion.div style={{ y }}>
-        {children}
-      </motion.div>
-    </section>
-  );
-}
-
 /* ══════════════════════════════════════════════
-   NAVIGATION (Premium Minimal)
+   NAVIGATION (Light, Clean, Boutiko-inspired)
    ══════════════════════════════════════════════ */
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -139,39 +119,43 @@ function Navigation() {
   }, []);
 
   const navLinks = [
-    { label: 'Accueil', href: '/' },
-    { label: 'A propos', href: '/#comment' },
+    { label: 'Solutions', href: '/#solutions' },
+    { label: 'Comment ça marche', href: '/#comment' },
     { label: 'Tarifs', href: '/#tarifs' },
-    { label: 'Contactez-nous', href: '/contact' },
+    { label: 'Contact', href: '/contact' },
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-black shadow-[0_1px_0_0_rgba(255,255,255,0.06)]`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-xl shadow-sm border-b border-slate-100' : 'bg-white/70 backdrop-blur-lg'}`}>
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[72px]">
           <Link href="/" className="flex items-center group">
-            <img src="/logo.png" alt="QRBag" className="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+            <img src="/logo.png" alt="QRBag" className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map(link => (
-              <a key={link.href} href={link.href} className="relative px-4 py-2 text-[13px] font-medium text-white/80 hover:text-white transition-colors duration-300 group">
+              <a key={link.href} href={link.href} className="relative px-4 py-2 text-[13px] font-medium text-slate-600 hover:text-slate-900 transition-colors duration-300">
                 {link.label}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-white rounded-full transition-all duration-300 group-hover:w-4" />
               </a>
             ))}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            <Link href="/login">
+              <Button variant="ghost" className="text-slate-600 hover:text-slate-900 font-medium text-[13px]">
+                Connexion
+              </Button>
+            </Link>
             <Link href="/devenir-partenaire">
-              <Button className="bg-white text-black hover:bg-slate-100 font-semibold text-[13px] rounded-full px-5 h-9 shadow-lg shadow-white/10 hover:shadow-white/20 transition-all duration-300 hover:scale-[1.02]">
+              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-[13px] rounded-full px-5 h-9 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02]">
                 Devenir Partenaire
               </Button>
             </Link>
           </div>
 
           <button
-            className="md:hidden text-white p-1.5"
+            className="md:hidden text-slate-700 p-1.5"
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Menu"
           >
@@ -184,17 +168,20 @@ function Navigation() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="md:hidden py-4 border-t border-white/10 bg-black/98 backdrop-blur-xl rounded-b-2xl"
+            className="md:hidden py-4 border-t border-slate-100 bg-white rounded-b-2xl"
           >
             <div className="flex flex-col gap-1">
               {navLinks.map(link => (
-                <a key={link.href} href={link.href} className="text-white/80 hover:text-white hover:bg-white/5 font-medium py-2.5 px-3 rounded-xl text-base transition-colors" onClick={() => setIsOpen(false)}>
+                <a key={link.href} href={link.href} className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium py-2.5 px-3 rounded-xl text-base transition-colors" onClick={() => setIsOpen(false)}>
                   {link.label}
                 </a>
               ))}
-              <hr className="border-white/10 my-2" />
+              <hr className="border-slate-100 my-2" />
+              <Link href="/login" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" className="w-full text-slate-600 font-medium">Connexion</Button>
+              </Link>
               <Link href="/devenir-partenaire" onClick={() => setIsOpen(false)}>
-                <Button className="w-full bg-white text-black font-medium rounded-full mt-1 hover:bg-slate-100">
+                <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full mt-1">
                   Devenir Partenaire
                 </Button>
               </Link>
@@ -207,127 +194,122 @@ function Navigation() {
 }
 
 /* ══════════════════════════════════════════════
-   HERO SECTION (Cinematic Immersive)
+   HERO SECTION (Bright, Clean, Boutiko-inspired)
    ══════════════════════════════════════════════ */
 function HeroSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start start', 'end start']
-  });
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
-  const textY = useTransform(scrollYProgress, [0, 0.5], [0, 80]);
-
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image with parallax */}
-      <motion.div className="absolute inset-0" style={{ scale }}>
-        <Image
-          src="/hero-qrbags.png"
-          alt="Voyageuse scannant un bagage QRBag"
-          fill
-          className="object-cover"
-          priority
-          quality={90}
-        />
-        {/* Multi-layer gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/30" />
-        {/* Ambient color overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-indigo-900/20" />
-      </motion.div>
+    <section className="relative pt-28 pb-20 lg:pt-36 lg:pb-28 overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/40">
+      {/* Decorative blobs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-400/10 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-300/8 rounded-full blur-[120px]" />
 
-      {/* Animated mesh gradient accent */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-500/20 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-indigo-500/15 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 relative z-10">
+        <div className="text-center max-w-4xl mx-auto">
+          {/* Badge */}
+          <FadeIn>
+            <div className="inline-flex items-center gap-2.5 mb-8 px-5 py-2.5 bg-blue-50 border border-blue-100 rounded-full">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+              </span>
+              <span className="text-sm font-semibold text-blue-700">La plateforme #1 de protection bagages</span>
+            </div>
+          </FadeIn>
 
-      {/* Content */}
-      <motion.div className="relative z-10 max-w-5xl mx-auto px-5 sm:px-6 text-center pt-28 pb-28" style={{ opacity, y: textY }}>
-        <FadeIn>
-          <div className="inline-flex items-center gap-2.5 mb-8 px-5 py-2.5 bg-white/[0.08] border border-white/[0.12] rounded-full backdrop-blur-xl">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-            </span>
-            <span className="text-sm font-medium text-white/90 tracking-wide">Protection intelligente pour vos bagages</span>
-          </div>
-        </FadeIn>
+          {/* Headline */}
+          <FadeIn delay={0.15}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 mb-8 leading-[1.05] tracking-[-0.03em]">
+              Un bagage perdu{' '}
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
+                n&apos;est pas une fatalité
+              </span>
+            </h1>
+          </FadeIn>
 
-        <FadeIn delay={0.15}>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-8 leading-[1.02] tracking-[-0.02em]">
-            Un bagage perdu
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_3s_ease-in-out_infinite]">
-              n&apos;est pas une fatalité.
-            </span>
-          </h1>
-        </FadeIn>
+          {/* Subtitle */}
+          <FadeIn delay={0.3}>
+            <p className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto mt-2 leading-relaxed">
+              QRBag transforme la perte en opportunité — grâce à la technologie, la confiance, et le respect. Sans application, sans batterie, sans GPS.
+            </p>
+          </FadeIn>
 
-        <FadeIn delay={0.3}>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/60 max-w-2xl mx-auto mt-2 leading-relaxed font-light tracking-wide">
-            QRBag transforme la perte en opportunité — grâce à la technologie, la confiance, et le respect.
-          </p>
-        </FadeIn>
+          {/* CTA Buttons */}
+          <FadeIn delay={0.45}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+              <Link href="/devenir-partenaire">
+                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-full font-semibold text-base shadow-xl shadow-blue-500/20 hover:shadow-blue-500/30 hover:scale-[1.03] transition-all duration-300 gap-2.5 h-14">
+                  Commencer gratuitement
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/demo">
+                <Button className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 px-8 py-4 rounded-full font-semibold text-base transition-all duration-300 gap-2.5 h-14 hover:scale-[1.03] shadow-sm">
+                  <Play className="w-4 h-4" />
+                  Voir la démo
+                </Button>
+              </Link>
+            </div>
+          </FadeIn>
 
-        <FadeIn delay={0.45}>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-            <Link href="/demo">
-              <Button className="bg-white hover:bg-slate-50 text-slate-900 px-8 py-4 rounded-full font-semibold text-base shadow-2xl shadow-black/30 hover:shadow-black/40 hover:scale-[1.03] transition-all duration-300 gap-2.5 h-14">
-                <Play className="w-4 h-4" />
-                Découvrir la démo
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button className="bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.15] hover:border-white/[0.25] text-white px-8 py-4 rounded-full font-semibold text-base backdrop-blur-sm transition-all duration-300 gap-2.5 h-14 hover:scale-[1.03]">
-                Commander maintenant
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-        </FadeIn>
+          {/* Feature pills - scrolling marquee style */}
+          <FadeIn delay={0.6}>
+            <div className="flex flex-wrap justify-center gap-3 mt-14">
+              {[
+                { icon: Smartphone, text: 'Sans application', color: 'text-violet-600 bg-violet-50 border-violet-100' },
+                { icon: Zap, text: 'Sans batterie', color: 'text-amber-600 bg-amber-50 border-amber-100' },
+                { icon: MapPin, text: 'Géolocalisé en temps réel', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
+                { icon: Lock, text: 'Sécurisé RGPD', color: 'text-blue-600 bg-blue-50 border-blue-100' },
+              ].map((item, idx) => (
+                <motion.div
+                  key={item.text}
+                  className={`flex items-center gap-2 px-4 py-2.5 border rounded-full ${item.color}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 + idx * 0.1, duration: 0.6 }}
+                >
+                  <item.icon className="w-3.5 h-3.5" />
+                  <span className="text-xs font-semibold">{item.text}</span>
+                </motion.div>
+              ))}
+            </div>
+          </FadeIn>
+        </div>
 
-        {/* Feature pills */}
-        <FadeIn delay={0.6}>
-          <div className="flex flex-wrap justify-center gap-3 mt-16">
+        {/* Stats row */}
+        <FadeIn delay={0.7}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-3xl mx-auto">
             {[
-              { icon: Smartphone, text: 'Sans application' },
-              { icon: Zap, text: 'Sans batterie' },
-              { icon: MapPin, text: 'Géolocalisé en temps réel' },
-              { icon: Lock, text: 'Sécurisé RGPD' },
-            ].map((item, idx) => (
+              { value: '10 000+', label: 'Bagages protégés', icon: Luggage },
+              { value: '15+', label: 'Pays couverts', icon: Globe },
+              { value: '98%', label: 'Taux de récupération', icon: TrendingUp },
+              { value: '24/7', label: 'Disponibilité', icon: BellRing },
+            ].map((stat, i) => (
               <motion.div
-                key={item.text}
-                className="flex items-center gap-2.5 px-4 py-2.5 bg-white/[0.06] border border-white/[0.08] rounded-full backdrop-blur-md"
+                key={stat.label}
+                className="text-center p-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 + idx * 0.1, duration: 0.6 }}
+                transition={{ delay: 1 + i * 0.1, duration: 0.5 }}
               >
-                <item.icon className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-xs font-medium text-white/60 tracking-wide">{item.text}</span>
+                <div className="flex justify-center mb-2">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+                    <stat.icon className="w-4.5 h-4.5 text-blue-600" />
+                  </div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">{stat.value}</div>
+                <div className="text-xs text-slate-500 font-medium mt-0.5">{stat.label}</div>
               </motion.div>
             ))}
           </div>
         </FadeIn>
-      </motion.div>
-
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/50 to-transparent" />
-
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <ChevronDown className="w-5 h-5 text-white/40" />
-      </motion.div>
+      </div>
     </section>
   );
 }
 
 /* ══════════════════════════════════════════════
-   QRBag EN ACTION SECTION (Refined)
+   QRBag EN ACTION SECTION (Clean + Bright)
    ══════════════════════════════════════════════ */
 function QRBagEnActionSection() {
   const features = [
@@ -340,15 +322,15 @@ function QRBagEnActionSection() {
   const featureIcons: LucideIcon[] = [ScanLine, BellRing, MapPin, Smartphone];
 
   return (
-    <section className="py-28 lg:py-36 px-5 bg-white" id="comment">
+    <section className="py-24 lg:py-32 px-5 bg-white" id="comment">
       <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           {/* Left - QR Code Image */}
           <FadeIn direction="right">
             <div className="relative">
-              {/* Ambient glow */}
-              <div className="absolute -inset-8 bg-gradient-to-br from-blue-200/30 to-cyan-100/30 rounded-[2.5rem] blur-[60px]" />
-              <div className="relative rounded-3xl overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] border border-slate-100/80">
+              {/* Soft gradient behind image */}
+              <div className="absolute -inset-6 bg-gradient-to-br from-blue-100/40 to-indigo-100/40 rounded-[2rem] blur-[40px]" />
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-slate-200/60 border border-slate-100">
                 <Image
                   src="/images/landing-v2/qrcode-reel.jpg"
                   alt="QR Code QRBag apposé sur un bagage"
@@ -359,11 +341,13 @@ function QRBagEnActionSection() {
               </div>
               {/* Floating stat badge */}
               <motion.div
-                className="absolute -bottom-5 -right-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white px-6 py-4 rounded-2xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.3)] font-bold text-sm flex items-center gap-2.5"
-                animate={{ y: [0, -8, 0] }}
+                className="absolute -bottom-4 -right-4 bg-white text-slate-900 px-5 py-3 rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 font-bold text-sm flex items-center gap-2.5"
+                animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-500 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-white" />
+                </div>
                 98% de récupération
               </motion.div>
             </div>
@@ -376,9 +360,9 @@ function QRBagEnActionSection() {
                 <Sparkles className="w-3.5 h-3.5" />
                 QRBag en action
               </span>
-              <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-7 tracking-[-0.02em] leading-[1.08]">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-7 tracking-[-0.02em] leading-[1.1]">
                 Scannez, activez,{' '}
-                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">voyagez.</span>
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">voyagez.</span>
               </h2>
               <p className="text-lg text-slate-500 leading-relaxed mb-10">
                 Notre technologie QR code brevetée permet à n&apos;importe qui de signaler un bagage trouvé en un seul geste. Vous recevez instantanément une notification avec la localisation exacte de votre valise.
@@ -396,7 +380,7 @@ function QRBagEnActionSection() {
                       viewport={{ once: true }}
                       transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
                     >
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center flex-shrink-0 transition-colors duration-300">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 group-hover:from-blue-100 group-hover:to-indigo-100 flex items-center justify-center flex-shrink-0 transition-colors duration-300">
                         <Icon className="w-4.5 h-4.5 text-blue-600" />
                       </div>
                       <span className="text-slate-700 font-medium text-[15px]">{feature}</span>
@@ -407,7 +391,7 @@ function QRBagEnActionSection() {
 
               <div className="mt-12 flex items-center gap-4">
                 <Link href="/demo">
-                  <Button className="bg-slate-900 hover:bg-slate-800 text-white px-7 py-3.5 rounded-full font-semibold text-sm shadow-[0_16px_32px_-8px_rgba(0,0,0,0.15)] hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.2)] transition-all duration-300 gap-2 hover:scale-[1.02]">
+                  <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-7 py-3.5 rounded-full font-semibold text-sm shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all duration-300 gap-2 hover:scale-[1.02]">
                     <Play className="w-4 h-4" />
                     Voir la démo
                   </Button>
@@ -422,7 +406,7 @@ function QRBagEnActionSection() {
 }
 
 /* ══════════════════════════════════════════════
-   TRANSPORT MODES SECTION (Bento Grid)
+   TRANSPORT MODES SECTION (Bento Grid - Bright)
    ══════════════════════════════════════════════ */
 function TransportModesSection() {
   const modes = [
@@ -432,6 +416,8 @@ function TransportModesSection() {
       image: '/images/landing-v2/transport-avion.jpg',
       stat: '15M+ passagers/an',
       icon: Plane,
+      accent: 'from-blue-500 to-blue-600',
+      lightBg: 'bg-blue-50',
     },
     {
       title: 'Train',
@@ -439,6 +425,8 @@ function TransportModesSection() {
       image: '/images/landing-v2/transport-train.jpg',
       stat: '4.5M voyageurs/jour',
       icon: Zap,
+      accent: 'from-violet-500 to-violet-600',
+      lightBg: 'bg-violet-50',
     },
     {
       title: 'Bateau',
@@ -446,6 +434,8 @@ function TransportModesSection() {
       image: '/images/landing-v2/transport-bateau.jpg',
       stat: '30M croisiéristes',
       icon: Ship,
+      accent: 'from-teal-500 to-teal-600',
+      lightBg: 'bg-teal-50',
     },
     {
       title: 'Bus',
@@ -453,18 +443,20 @@ function TransportModesSection() {
       image: '/images/landing-v2/transport-bus.jpg',
       stat: '200K trajets/jour',
       icon: Bus,
+      accent: 'from-orange-500 to-orange-600',
+      lightBg: 'bg-orange-50',
     },
   ];
 
   return (
-    <section className="py-28 lg:py-36 px-5 bg-gradient-to-b from-white via-slate-50/50 to-white">
+    <section className="py-24 lg:py-32 px-5 bg-gradient-to-b from-slate-50/80 to-white">
       <div className="max-w-6xl mx-auto">
-        <FadeIn className="text-center mb-20">
+        <FadeIn className="text-center mb-16">
           <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-600 mb-5">
             <Globe className="w-3.5 h-3.5" />
             Tous les modes de transport
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-[-0.02em]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-6 tracking-[-0.02em]">
             Une protection pour tous vos voyages
           </h2>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -472,11 +464,11 @@ function TransportModesSection() {
           </p>
         </FadeIn>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {modes.map((mode, i) => (
             <FadeIn key={mode.title} delay={i * 0.1}>
               <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 hover:-translate-y-1">
-                {/* Image - portrait ~3:4 ratio, dominant */}
+                {/* Image */}
                 <div className="relative aspect-[3/4] overflow-hidden">
                   <Image
                     src={mode.image}
@@ -485,14 +477,15 @@ function TransportModesSection() {
                     className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
                   {/* Icon badge */}
-                  <div className="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm">
+                  <div className={`absolute top-3 left-3 w-9 h-9 ${mode.lightBg} backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm`}>
                     <mode.icon className="w-4 h-4 text-slate-700" />
                   </div>
                 </div>
 
-                {/* Content below image - minimal */}
+                {/* Content */}
                 <div className="p-4">
                   <h3 className="text-sm font-bold text-slate-900">{mode.title}</h3>
+                  <p className="text-xs text-slate-500 mt-1">{mode.stat}</p>
                 </div>
               </div>
             </FadeIn>
@@ -504,7 +497,7 @@ function TransportModesSection() {
 }
 
 /* ══════════════════════════════════════════════
-   POURQUOI QRBAG (Premium Cards)
+   POURQUOI QRBAG (Light Gradient Cards)
    ══════════════════════════════════════════════ */
 function WhyQRBagSection() {
   const cards = [
@@ -512,34 +505,37 @@ function WhyQRBagSection() {
       icon: Globe,
       title: 'Ancré en Afrique, pensé pour le monde',
       description: 'Né à Dakar, déployé dans 15 pays. QRBag comprend les réalités du voyage africain et international avec une solution adaptée à chaque contexte.',
-      bgColor: 'bg-blue-600',
-      iconBg: 'bg-blue-500',
+      gradient: 'from-blue-600 to-indigo-600',
+      lightBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
     },
     {
       icon: Shield,
       title: 'Sécurité certifiée RGPD',
       description: 'Zéro donnée sensible stockée publiquement. Vos informations personnelles sont chiffrées et protégées selon les normes européennes les plus strictes.',
-      bgColor: 'bg-orange-500',
-      iconBg: 'bg-orange-400',
+      gradient: 'from-orange-500 to-amber-500',
+      lightBg: 'bg-orange-50',
+      iconColor: 'text-orange-600',
     },
     {
       icon: Heart,
       title: 'Pour les pèlerins, les voyageurs, les agences',
       description: "Hajj, Omra, tourisme, affaires — une seule solution qui s'adapte à chaque voyageur. Plus de 10 000 bagages déjà protégés à travers le monde.",
-      bgColor: 'bg-emerald-600',
-      iconBg: 'bg-emerald-500',
+      gradient: 'from-emerald-500 to-teal-500',
+      lightBg: 'bg-emerald-50',
+      iconColor: 'text-emerald-600',
     },
   ];
 
   return (
-    <section className="py-28 lg:py-36 px-5 bg-white">
+    <section className="py-24 lg:py-32 px-5 bg-white">
       <div className="max-w-6xl mx-auto">
-        <FadeIn className="text-center mb-20">
+        <FadeIn className="text-center mb-16">
           <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-600 mb-5">
             <BadgeCheck className="w-3.5 h-3.5" />
             Pourquoi QRBag
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-[-0.02em] leading-[1.08]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-6 tracking-[-0.02em] leading-[1.1]">
             La confiance, au-delà<br className="hidden sm:block" /> des frontières
           </h2>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -550,14 +546,14 @@ function WhyQRBagSection() {
         <div className="grid md:grid-cols-3 gap-6">
           {cards.map((card, i) => (
             <FadeIn key={card.title} delay={i * 0.12}>
-              <div className={`group h-full ${card.bgColor} rounded-[2rem] p-9 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] transition-all duration-500 hover:-translate-y-1.5`}>
-                <div className={`w-14 h-14 rounded-2xl ${card.iconBg} flex items-center justify-center mb-7`}>
-                  <card.icon className="w-6 h-6 text-white" />
+              <div className="group h-full bg-white border border-slate-200/80 rounded-[2rem] p-9 hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 hover:-translate-y-1.5">
+                <div className={`w-14 h-14 rounded-2xl ${card.lightBg} flex items-center justify-center mb-7`}>
+                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3 leading-snug">
+                <h3 className="text-lg font-bold text-slate-900 mb-3 leading-snug">
                   {card.title}
                 </h3>
-                <p className="text-[15px] text-white/80 leading-relaxed">
+                <p className="text-[15px] text-slate-500 leading-relaxed">
                   {card.description}
                 </p>
               </div>
@@ -570,7 +566,7 @@ function WhyQRBagSection() {
 }
 
 /* ══════════════════════════════════════════════
-   SOLUTIONS (Modern Cards with Gradients)
+   SOLUTIONS (Colorful Gradient Cards)
    ══════════════════════════════════════════════ */
 function SolutionsSection() {
   const solutions = [
@@ -579,36 +575,33 @@ function SolutionsSection() {
       description: 'Protection complète pour les pèlerins avec 3 bagages inclus (cabine + 2 soutes). Gérée par votre agence de voyage partenaire.',
       icon: Shield,
       href: '/hajj-omra',
-      bgColor: 'bg-amber-500',
-      iconBg: 'bg-amber-400',
+      gradient: 'from-amber-500 to-orange-500',
     },
     {
       title: 'Voyageurs Standard',
       description: 'Protection flexible pour tous vos voyages. Choisissez 1 ou 3 bagages avec une durée adaptée à vos besoins.',
       icon: Plane,
       href: '/voyageurs-standard',
-      bgColor: 'bg-blue-600',
-      iconBg: 'bg-blue-500',
+      gradient: 'from-blue-600 to-indigo-600',
     },
     {
       title: 'Devenir Partenaire',
       description: 'Agences de voyage, compagnies aériennes, hôtels — proposez QRBag à vos clients et générez des revenus complémentaires.',
       icon: Users,
       href: '/devenir-partenaire',
-      bgColor: 'bg-violet-600',
-      iconBg: 'bg-violet-500',
+      gradient: 'from-violet-600 to-purple-600',
     },
   ];
 
   return (
-    <section className="py-28 lg:py-36 px-5 bg-slate-50/60" id="solutions">
+    <section className="py-24 lg:py-32 px-5 bg-slate-50/60" id="solutions">
       <div className="max-w-6xl mx-auto">
-        <FadeIn className="text-center mb-20">
+        <FadeIn className="text-center mb-16">
           <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-600 mb-5">
             <Luggage className="w-3.5 h-3.5" />
             Solutions
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-[-0.02em]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-6 tracking-[-0.02em]">
             Deux solutions, une protection
           </h2>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -620,8 +613,8 @@ function SolutionsSection() {
           {solutions.map((sol, i) => (
             <FadeIn key={sol.title} delay={i * 0.12}>
               <Link href={sol.href} className="group block h-full">
-                <div className={`h-full ${sol.bgColor} rounded-[2rem] p-9 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] transition-all duration-500 hover:-translate-y-1.5`}>
-                  <div className={`w-14 h-14 rounded-2xl ${sol.iconBg} flex items-center justify-center mb-7`}>
+                <div className={`h-full bg-gradient-to-br ${sol.gradient} rounded-[2rem] p-9 hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5`}>
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-7">
                     <sol.icon className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-white mb-3">{sol.title}</h3>
@@ -641,37 +634,36 @@ function SolutionsSection() {
 }
 
 /* ══════════════════════════════════════════════
-   STATS SECTION (Animated Dark)
+   STATS SECTION (Light with gradient accent)
    ══════════════════════════════════════════════ */
 function StatsSection() {
   const stats = [
-    { value: 10000, suffix: '+', label: 'Bagages protégés' },
-    { value: 15, suffix: '', label: 'Pays couverts' },
-    { value: 98, suffix: '%', label: 'Taux de récupération' },
-    { value: 0, suffix: '24/7', label: 'Disponibilité' },
+    { value: 10000, suffix: '+', label: 'Bagages protégés', icon: Luggage },
+    { value: 15, suffix: '', label: 'Pays couverts', icon: Globe },
+    { value: 98, suffix: '%', label: 'Taux de récupération', icon: TrendingUp },
+    { value: 0, suffix: '24/7', label: 'Disponibilité', icon: BellRing },
   ];
 
   return (
-    <section className="py-24 lg:py-28 px-5 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/8 rounded-full blur-[120px]" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/8 rounded-full blur-[120px]" />
-
-      {/* Subtle grid */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-        backgroundSize: '40px 40px',
-      }} />
+    <section className="py-20 lg:py-24 px-5 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 relative overflow-hidden">
+      {/* Decorative shapes */}
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[80px] -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[80px] translate-x-1/2 translate-y-1/2" />
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-16">
           {stats.map((stat, i) => (
             <FadeIn key={stat.label} delay={i * 0.1}>
               <div className="text-center group">
-                <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 tracking-[-0.02em] group-hover:text-blue-400 transition-colors duration-500">
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                    <stat.icon className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <div className="text-4xl sm:text-5xl font-extrabold text-white mb-2 tracking-[-0.02em]">
                   {stat.suffix === '24/7' ? '24/7' : <AnimatedCounter target={stat.value} suffix={stat.suffix} />}
                 </div>
-                <div className="text-sm text-slate-500 font-medium tracking-wide">{stat.label}</div>
+                <div className="text-sm text-white/70 font-medium">{stat.label}</div>
               </div>
             </FadeIn>
           ))}
@@ -682,7 +674,7 @@ function StatsSection() {
 }
 
 /* ══════════════════════════════════════════════
-   COMMENT ÇA MARCHE (Timeline)
+   COMMENT ÇA MARCHE (Steps - Bright)
    ══════════════════════════════════════════════ */
 function HowItWorksSection() {
   const steps = [
@@ -691,36 +683,40 @@ function HowItWorksSection() {
       image: '/images/landing-v2/step-receive.jpg',
       title: 'Recevez votre QR',
       description: 'Commandez vos QR codes via notre formulaire B2B ou auprès de votre agence partenaire.',
+      color: 'from-blue-500 to-blue-600',
     },
     {
       step: '02',
       image: '/images/landing-v2/step-activate.jpg',
       title: 'Activez en 30 secondes',
       description: 'Scannez le QR code et remplissez le formulaire avec vos informations de voyage.',
+      color: 'from-violet-500 to-violet-600',
     },
     {
       step: '03',
       image: '/images/landing-v2/step-travel.jpg',
       title: 'Voyagez serein',
-      description: 'Vos bagages sont protégés. Collez simplement l\'autocollant bien visible sur chaque valise.',
+      description: "Vos bagages sont protégés. Collez simplement l'autocollant bien visible sur chaque valise.",
+      color: 'from-emerald-500 to-emerald-600',
     },
     {
       step: '04',
       image: '/images/landing-v2/step-notify.jpg',
       title: 'Soyez notifié instantanément',
-      description: 'Si quelqu\'un trouve votre bagage, vous recevez une alerte immédiatement via WhatsApp.',
+      description: "Si quelqu'un trouve votre bagage, vous recevez une alerte immédiatement via WhatsApp.",
+      color: 'from-orange-500 to-orange-600',
     },
   ];
 
   return (
-    <section className="py-28 lg:py-36 px-5 bg-white">
+    <section className="py-24 lg:py-32 px-5 bg-white">
       <div className="max-w-6xl mx-auto">
-        <FadeIn className="text-center mb-20">
+        <FadeIn className="text-center mb-16">
           <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-600 mb-5">
             <Zap className="w-3.5 h-3.5" />
             Comment ça marche
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-[-0.02em]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-6 tracking-[-0.02em]">
             La protection en 4 étapes
           </h2>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -728,10 +724,10 @@ function HowItWorksSection() {
           </p>
         </FadeIn>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {steps.map((step, i) => (
             <FadeIn key={step.step} delay={i * 0.1}>
-              <div className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 hover:-translate-y-1">
+              <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 hover:-translate-y-1">
                 {/* Image */}
                 <div className="relative aspect-[3/4] overflow-hidden">
                   <Image
@@ -741,7 +737,7 @@ function HowItWorksSection() {
                     className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
                   {/* Step number */}
-                  <span className="absolute top-3 right-3 w-9 h-9 bg-slate-900 text-white text-xs font-bold rounded-xl flex items-center justify-center shadow-lg">
+                  <span className={`absolute top-3 right-3 w-9 h-9 bg-gradient-to-br ${step.color} text-white text-xs font-bold rounded-xl flex items-center justify-center shadow-lg`}>
                     {step.step}
                   </span>
                 </div>
@@ -761,7 +757,7 @@ function HowItWorksSection() {
 }
 
 /* ══════════════════════════════════════════════
-   TESTIMONIALS (Modern Quotes)
+   TESTIMONIALS (Clean Light Cards)
    ══════════════════════════════════════════════ */
 function TestimonialsSection() {
   const testimonials = [
@@ -789,14 +785,14 @@ function TestimonialsSection() {
   ];
 
   return (
-    <section className="py-28 lg:py-36 px-5 bg-gradient-to-b from-white via-slate-50/50 to-white">
+    <section className="py-24 lg:py-32 px-5 bg-gradient-to-b from-white via-slate-50/50 to-white">
       <div className="max-w-6xl mx-auto">
-        <FadeIn className="text-center mb-20">
+        <FadeIn className="text-center mb-16">
           <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-600 mb-5">
             <Star className="w-3.5 h-3.5" />
             Témoignages
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-[-0.02em]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-6 tracking-[-0.02em]">
             Ils nous font confiance
           </h2>
         </FadeIn>
@@ -804,7 +800,7 @@ function TestimonialsSection() {
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
             <FadeIn key={t.name} delay={i * 0.12}>
-              <div className="h-full bg-white border border-slate-100/80 rounded-[2rem] p-8 hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.06)] transition-all duration-500 group">
+              <div className="h-full bg-white border border-slate-200/80 rounded-[2rem] p-8 hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 group">
                 {/* Stars */}
                 <div className="flex gap-1 mb-5">
                   {Array.from({ length: t.rating }).map((_, j) => (
@@ -815,7 +811,7 @@ function TestimonialsSection() {
                   &ldquo;{t.content}&rdquo;
                 </p>
                 <div className="flex items-center gap-3.5 pt-6 border-t border-slate-100">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-lg">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 text-white flex items-center justify-center text-xs font-bold shadow-lg">
                     {t.avatar}
                   </div>
                   <div>
@@ -833,7 +829,7 @@ function TestimonialsSection() {
 }
 
 /* ══════════════════════════════════════════════
-   PRICING SECTION (Premium Cards)
+   PRICING SECTION (Clean White Cards with Accent)
    ══════════════════════════════════════════════ */
 function PricingSection() {
   const plans = [
@@ -845,10 +841,9 @@ function PricingSection() {
       features: ['3 bagages QR codes', 'Activation en 30 secondes', 'Notifications WhatsApp', 'Géolocalisation temps réel'],
       popular: false,
       href: '/voyageurs-standard',
-      bgGradient: 'bg-gradient-to-br from-cyan-500 to-cyan-600',
-      iconBg: 'bg-cyan-400',
-      shadowColor: 'shadow-cyan-500/30',
-      btnClass: 'bg-white text-cyan-700 hover:bg-cyan-50',
+      gradient: 'from-cyan-500 to-blue-500',
+      accentColor: 'text-cyan-600',
+      btnClass: 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600',
     },
     {
       name: 'Famille',
@@ -858,10 +853,9 @@ function PricingSection() {
       features: ['9 bagages QR codes', 'Activation en 30 secondes', 'Notifications WhatsApp', 'Géolocalisation temps réel', 'Support prioritaire'],
       popular: true,
       href: '/voyageurs-standard',
-      bgGradient: 'bg-gradient-to-br from-orange-500 to-orange-600',
-      iconBg: 'bg-orange-400',
-      shadowColor: 'shadow-orange-500/30',
-      btnClass: 'bg-white text-orange-700 hover:bg-orange-50',
+      gradient: 'from-orange-500 to-amber-500',
+      accentColor: 'text-orange-600',
+      btnClass: 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600',
     },
     {
       name: 'Hajj & Omra',
@@ -871,22 +865,21 @@ function PricingSection() {
       features: ['3 bagages QR codes', 'Géré par votre agence', 'Notifications WhatsApp', 'Support 24/7 dédié', 'Couverture internationale'],
       popular: false,
       href: '/hajj-omra',
-      bgGradient: 'bg-gradient-to-br from-teal-500 to-teal-600',
-      iconBg: 'bg-teal-400',
-      shadowColor: 'shadow-teal-500/30',
-      btnClass: 'bg-white text-teal-700 hover:bg-teal-50',
+      gradient: 'from-teal-500 to-emerald-500',
+      accentColor: 'text-teal-600',
+      btnClass: 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600',
     },
   ];
 
   return (
-    <section className="py-28 lg:py-36 px-5 bg-white" id="tarifs">
+    <section className="py-24 lg:py-32 px-5 bg-white" id="tarifs">
       <div className="max-w-6xl mx-auto">
-        <FadeIn className="text-center mb-20">
+        <FadeIn className="text-center mb-16">
           <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-600 mb-5">
             <Luggage className="w-3.5 h-3.5" />
             Tarifs
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-[-0.02em]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-6 tracking-[-0.02em]">
             Protégez vos bagages à partir de 5€
           </h2>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -897,28 +890,28 @@ function PricingSection() {
         <div className="grid md:grid-cols-3 gap-6 items-start">
           {plans.map((plan, i) => (
             <FadeIn key={plan.name} delay={i * 0.12}>
-              <div className={`relative h-full rounded-[2rem] p-9 transition-all duration-500 hover:-translate-y-2 ${plan.bgGradient} text-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.25)]`}>
+              <div className={`relative h-full bg-white rounded-[2rem] p-9 border transition-all duration-500 hover:-translate-y-2 hover:shadow-xl ${plan.popular ? 'border-orange-200 shadow-lg shadow-orange-100/50' : 'border-slate-200/80 shadow-sm hover:shadow-slate-200/40'}`}>
                 {plan.popular && (
-                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-900 text-xs font-bold px-5 py-1.5 rounded-full shadow-lg shadow-amber-500/30">
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-400 text-white text-xs font-bold px-5 py-1.5 rounded-full shadow-lg shadow-orange-500/30">
                     Populaire
                   </span>
                 )}
-                <h3 className="text-xl font-bold mb-1.5 text-white">{plan.name}</h3>
-                <p className="text-sm mb-6 text-white/75">{plan.description}</p>
+                <h3 className="text-xl font-bold mb-1.5 text-slate-900">{plan.name}</h3>
+                <p className="text-sm mb-6 text-slate-500">{plan.description}</p>
                 <div className="flex items-baseline gap-1 mb-8">
-                  <span className="text-5xl font-bold tracking-[-0.02em] text-white">{plan.price}€</span>
-                  <span className="text-sm text-white/60">{plan.period}</span>
+                  <span className={`text-5xl font-extrabold tracking-[-0.02em] ${plan.accentColor}`}>{plan.price}€</span>
+                  <span className="text-sm text-slate-400">{plan.period}</span>
                 </div>
                 <ul className="space-y-3.5 mb-9">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-3 text-sm">
-                      <CheckCircle className="w-4 h-4 flex-shrink-0 text-white/80" />
-                      <span className="text-white/85">{f}</span>
+                      <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${plan.accentColor}`} />
+                      <span className="text-slate-600">{f}</span>
                     </li>
                   ))}
                 </ul>
                 <Link href={plan.href}>
-                  <Button className={`w-full py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:scale-[1.02] shadow-[0_16px_32px_-8px_rgba(0,0,0,0.2)] ${plan.btnClass}`}>
+                  <Button className={`w-full py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:scale-[1.02] shadow-lg ${plan.btnClass}`}>
                     Choisir {plan.name}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
@@ -933,43 +926,42 @@ function PricingSection() {
 }
 
 /* ══════════════════════════════════════════════
-   FINAL CTA SECTION (Cinematic)
+   FINAL CTA SECTION (Gradient - Bright)
    ══════════════════════════════════════════════ */
 function FinalCTASection() {
   return (
-    <section className="py-28 lg:py-36 px-5 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
-      {/* Ambient glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/8 rounded-full blur-[120px]" />
-      <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-indigo-500/6 rounded-full blur-[100px]" />
-      <div className="absolute bottom-1/3 left-1/4 w-[300px] h-[300px] bg-cyan-500/6 rounded-full blur-[100px]" />
+    <section className="py-24 lg:py-32 px-5 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 relative overflow-hidden">
+      {/* Decorative */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4" />
 
       <div className="max-w-3xl mx-auto text-center relative z-10">
         <FadeIn>
-          <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-400 mb-6">
+          <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase text-blue-200 mb-6">
             <Sparkles className="w-3.5 h-3.5" />
             Prêt à voyager serein ?
           </span>
         </FadeIn>
         <FadeIn delay={0.15}>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-8 tracking-[-0.02em] leading-[1.08]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-8 tracking-[-0.02em] leading-[1.1]">
             Rejoignez 10 000+ voyageurs qui protègent leurs bagages
           </h2>
         </FadeIn>
         <FadeIn delay={0.3}>
-          <p className="text-lg text-slate-500 mb-12 leading-relaxed">
+          <p className="text-lg text-white/70 mb-12 leading-relaxed">
             Activation en 30 secondes, tranquillité pour tous vos voyages.
           </p>
         </FadeIn>
         <FadeIn delay={0.45}>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button className="bg-white hover:bg-slate-50 text-slate-900 px-8 py-4 rounded-full font-semibold text-base shadow-[0_20px_40px_-8px_rgba(255,255,255,0.15)] hover:scale-[1.03] transition-all duration-300 gap-2.5 h-14">
+              <Button className="bg-white hover:bg-slate-50 text-slate-900 px-8 py-4 rounded-full font-semibold text-base shadow-xl hover:scale-[1.03] transition-all duration-300 gap-2.5 h-14">
                 Commander maintenant
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <Link href="/devenir-partenaire">
-              <Button className="bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] hover:border-white/[0.2] text-white px-8 py-4 rounded-full font-semibold text-base backdrop-blur-sm transition-all duration-300 h-14 hover:scale-[1.03]">
+              <Button className="bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 text-white px-8 py-4 rounded-full font-semibold text-base backdrop-blur-sm transition-all duration-300 h-14 hover:scale-[1.03]">
                 Devenir partenaire
               </Button>
             </Link>
@@ -981,14 +973,14 @@ function FinalCTASection() {
 }
 
 /* ══════════════════════════════════════════════
-   CONTACT CTA (Minimal)
+   CONTACT CTA (Light Card)
    ══════════════════════════════════════════════ */
 function ContactCTASection() {
   return (
-    <section className="py-20 px-5 bg-white">
+    <section className="py-20 px-5 bg-slate-50/60">
       <div className="max-w-4xl mx-auto">
         <FadeIn>
-          <div className="bg-gradient-to-br from-slate-50 to-slate-50/50 rounded-[2rem] p-10 lg:p-14 flex flex-col md:flex-row items-center justify-between gap-8 border border-slate-100/80">
+          <div className="bg-white rounded-[2rem] p-10 lg:p-14 flex flex-col md:flex-row items-center justify-between gap-8 border border-slate-200/80 shadow-sm">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center flex-shrink-0">
                 <Headphones className="w-6 h-6 text-blue-600" />
@@ -1000,7 +992,7 @@ function ContactCTASection() {
             </div>
             <div className="flex gap-3">
               <Link href="/contact">
-                <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-full font-semibold text-sm shadow-[0_16px_32px_-8px_rgba(0,0,0,0.15)] hover:scale-[1.02] transition-all duration-300 gap-2 px-6 h-11">
+                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-semibold text-sm shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all duration-300 gap-2 px-6 h-11">
                   <Mail className="w-4 h-4" />
                   Nous contacter
                 </Button>
@@ -1014,7 +1006,7 @@ function ContactCTASection() {
 }
 
 /* ══════════════════════════════════════════════
-   FOOTER (Dark Premium)
+   FOOTER (Dark but Refined)
    ══════════════════════════════════════════════ */
 function Footer() {
   const columns = [
@@ -1053,7 +1045,7 @@ function Footer() {
   ];
 
   return (
-    <footer className="bg-slate-950 pt-20 pb-10">
+    <footer className="bg-slate-900 pt-20 pb-10">
       <div className="max-w-6xl mx-auto px-5">
         <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-12">
           {/* Brand */}
@@ -1061,7 +1053,7 @@ function Footer() {
             <div className="mb-5">
               <img src="/logo.png" alt="QRBag" className="h-11 w-auto object-contain" />
             </div>
-            <p className="text-base leading-relaxed max-w-xs text-white/70 mb-7">
+            <p className="text-base leading-relaxed max-w-xs text-white/60 mb-7">
               Protection intelligente des bagages pour voyageurs et pèlerins.
             </p>
             {/* Social */}
@@ -1072,7 +1064,7 @@ function Footer() {
                 { icon: Twitter, href: 'https://twitter.com/qrbag', label: 'Twitter' },
               ].map(s => (
                 <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/[0.05] hover:bg-white/[0.1] rounded-xl flex items-center justify-center transition-all duration-300" aria-label={s.label}>
-                  <s.icon className="w-5 h-5 text-white/60 hover:text-white transition-colors" />
+                  <s.icon className="w-5 h-5 text-white/50 hover:text-white transition-colors" />
                 </a>
               ))}
             </div>
@@ -1081,11 +1073,11 @@ function Footer() {
           {/* Links */}
           {columns.map(col => (
             <div key={col.title}>
-              <h4 className="text-sm font-bold tracking-[0.1em] uppercase text-white/90 mb-5">{col.title}</h4>
+              <h4 className="text-sm font-bold tracking-[0.1em] uppercase text-white/80 mb-5">{col.title}</h4>
               <ul className="space-y-3">
                 {col.links.map(link => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-base text-white/70 hover:text-white transition-colors duration-300">
+                    <Link href={link.href} className="text-base text-white/50 hover:text-white transition-colors duration-300">
                       {link.label}
                     </Link>
                   </li>
@@ -1097,10 +1089,10 @@ function Footer() {
 
         {/* Bottom */}
         <div className="mt-20 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-white/40">
             &copy; {new Date().getFullYear()} QRBag. Tous droits réservés.
           </p>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-white/30">
             Fait avec soin à Dakar, pour le monde.
           </p>
         </div>
