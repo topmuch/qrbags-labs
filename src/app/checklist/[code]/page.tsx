@@ -514,12 +514,14 @@ export default function ChecklistViewPage() {
                   <ExternalLink className="w-3 h-3" /> Ouvrir
                 </button>
               </div>
-              <iframe
-                src={`/api/checklist/${code}/pdf?key=${encodeURIComponent(keyInput.trim())}`}
-                className="w-full"
-                style={{ height: '600px', border: 'none' }}
-                title={`PDF Preview - ${view.code}`}
-              />
+              <div className="relative" style={{ height: '600px' }}>
+                <iframe
+                  src={`/api/checklist/${code}/pdf?key=${encodeURIComponent(keyInput.trim())}`}
+                  className="w-full h-full"
+                  style={{ border: 'none' }}
+                  title={`PDF Preview - ${view.code}`}
+                />
+              </div>
             </div>
           </div>
         )}

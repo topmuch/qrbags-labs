@@ -1,4 +1,13 @@
 import { Buffer } from 'buffer';
+import { createRequire } from 'module';
+
+// Create a CJS require function safe for both CJS and ESM (Turbopack)
+const _require = typeof require !== 'undefined' ? require : createRequire(import.meta.url);
+let _qrCodeModule: any = null;
+function loadQRCode() {
+  if (!_qrCodeModule) _qrCodeModule = _require('qrcode');
+  return _qrCodeModule;
+}
 
 /**
  * QR Code Server-Side Generation Module
@@ -40,9 +49,8 @@ export async function generateQRCodeImage(options: QRCodeImageOptions): Promise<
   const qrColor = type === 'hajj' ? '#0d5e34' : '#1D4ED8';
   const labelColor = type === 'hajj' ? '#0d5e34' : '#1D4ED8';
 
-  // Load qrcode at runtime (bypass Turbopack bundling)
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const QRCode = require('qrcode');
+  // Load qrcode (bypass Turbopack, safe in both CJS and ESM)
+  const QRCode = loadQRCode();
 
   // Generate QR code as PNG buffer with high quality
   const qrBuffer = await QRCode.toBuffer(scanUrl, {

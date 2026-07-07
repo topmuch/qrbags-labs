@@ -16,7 +16,26 @@
  *   CREAM = '#FDFBF7' (cream)
  */
 
+import { createRequire } from 'module';
 import { generateRandomCode } from './qr';
+
+// Create a CJS require function for loading external native packages
+// that Turbopack/ESM cannot bundle (qrcode, pdf-lib).
+const _require = typeof require !== 'undefined' ? require : createRequire(import.meta.url);
+
+// Lazy-loaded package caches (loaded once, reused across calls)
+let _qrCodeModule: any = null;
+let _pdfLibModule: any = null;
+
+function loadQRCode() {
+  if (!_qrCodeModule) _qrCodeModule = _require('qrcode');
+  return _qrCodeModule;
+}
+
+function loadPdfLib() {
+  if (!_pdfLibModule) _pdfLibModule = _require('pdf-lib');
+  return _pdfLibModule;
+}
 
 // Re-export client-safe constants/types (so server consumers can import from one place)
 export {
@@ -111,17 +130,16 @@ function formatTimestamp(date: Date): string {
 export async function generateChecklistPdf(data: ChecklistPdfData): Promise<Buffer> {
   const createdAt = data.createdAt || new Date();
 
-  // ─── Load external packages at runtime (bypass Turbopack bundling) ───
+  // ─── Load external packages (bypass Turbopack, safe in both CJS and ESM) ───
   let QRCode: any;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    QRCode = require('qrcode');
+    QRCode = loadQRCode();
   } catch {
     throw new Error('Failed to load qrcode package');
   }
 
   // ─── Generate QR code as PNG buffer ───
-  const qrBuffer = await QRCode.toBuffer(data.publicUrl, {
+  const qrBuffer = await QRCode.toBuffer(data.publicUrl || 'https://qrbags.com', {
     type: 'png',
     width: 200,
     margin: 1,
@@ -129,11 +147,10 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<Buff
     color: { dark: INK_COLOR, light: '#ffffff' },
   });
 
-  // ─── Load pdf-lib at runtime (bypass Turbopack bundling) ───
+  // ─── Load pdf-lib (bypass Turbopack, safe in both CJS and ESM) ───
   let pdfLib: any;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    pdfLib = require('pdf-lib');
+    pdfLib = loadPdfLib();
   } catch {
     throw new Error('Failed to load pdf-lib package');
   }
