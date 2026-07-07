@@ -88,7 +88,7 @@ export async function GET(
 
     // ─── Stream as response ───
     const filename = `QRBag-attestation-${checklist.code}.pdf`;
-    return new NextResponse(pdfBuffer as unknown as BodyInit, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

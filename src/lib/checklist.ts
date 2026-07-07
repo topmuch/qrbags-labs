@@ -16,24 +16,23 @@
  *   CREAM = '#FDFBF7' (cream)
  */
 
-import { createRequire } from 'module';
 import { generateRandomCode } from './qr';
 
-// Create a CJS require function for loading external native packages
-// that Turbopack/ESM cannot bundle (qrcode, pdf-lib).
-const _require = typeof require !== 'undefined' ? require : createRequire(import.meta.url);
-
-// Lazy-loaded package caches (loaded once, reused across calls)
+// Dynamic import caches (bypasses Turbopack bundling, works with serverExternalPackages)
 let _qrCodeModule: any = null;
 let _pdfLibModule: any = null;
 
-function loadQRCode() {
-  if (!_qrCodeModule) _qrCodeModule = _require('qrcode');
+async function loadQRCode() {
+  if (!_qrCodeModule) {
+    _qrCodeModule = await import('qrcode');
+  }
   return _qrCodeModule;
 }
 
-function loadPdfLib() {
-  if (!_pdfLibModule) _pdfLibModule = _require('pdf-lib');
+async function loadPdfLib() {
+  if (!_pdfLibModule) {
+    _pdfLibModule = await import('pdf-lib');
+  }
   return _pdfLibModule;
 }
 
@@ -130,12 +129,12 @@ function formatTimestamp(date: Date): string {
 export async function generateChecklistPdf(data: ChecklistPdfData): Promise<Buffer> {
   const createdAt = data.createdAt || new Date();
 
-  // ─── Load external packages (bypass Turbopack, safe in both CJS and ESM) ───
+  // ─── Load external packages (dynamic import, bypasses Turbopack bundling) ───
   let QRCode: any;
   try {
-    QRCode = loadQRCode();
-  } catch {
-    throw new Error('Failed to load qrcode package');
+    QRCode = await loadQRCode();
+  } catch (e) {
+    throw new Error(`Failed to load qrcode package: ${e instanceof Error ? e.message : String(e)}`);
   }
 
   // ─── Generate QR code as PNG buffer ───
@@ -147,12 +146,12 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<Buff
     color: { dark: INK_COLOR, light: '#ffffff' },
   });
 
-  // ─── Load pdf-lib (bypass Turbopack, safe in both CJS and ESM) ───
+  // ─── Load pdf-lib (dynamic import, bypasses Turbopack bundling) ───
   let pdfLib: any;
   try {
-    pdfLib = loadPdfLib();
-  } catch {
-    throw new Error('Failed to load pdf-lib package');
+    pdfLib = await loadPdfLib();
+  } catch (e) {
+    throw new Error(`Failed to load pdf-lib package: ${e instanceof Error ? e.message : String(e)}`);
   }
   const { PDFDocument, rgb, StandardFonts } = pdfLib;
   const pdfDoc = await PDFDocument.create();
