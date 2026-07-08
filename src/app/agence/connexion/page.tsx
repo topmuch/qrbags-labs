@@ -1,5 +1,5 @@
-import LoginPage from '@/components/auth/LoginPage';
+import AgenceLoginPage from '@/components/auth/AgenceLoginPage';
 
 export default function AgenceConnexionPage() {
-  return <LoginPage variant="agence" />;
+  return <AgenceLoginPage />;
 }
