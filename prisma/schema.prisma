@@ -132,6 +132,13 @@ model Baggage {
   transitMode       String    @default("active")
   transitModeUpdatedAt DateTime?
 
+  // ─── LABS — Feature #4: Alerte "Vol de Retour" (pays mismatch) ───
+  // Code ISO 3166-1 alpha-2 du pays de destination (ex: "SN", "JP", "FR").
+  // Utilisé pour comparer avec le pays détecté par IP lors d'un scan.
+  // Si mismatch → alerte critique envoyée au propriétaire.
+  destinationCountry String?   // ex: "SN", "JP" (normalisé via CountryRegionSelect)
+  suspiciousScanCount Int      @default(0)  // incrémenté à chaque scan mismatch
+
   agency            Agency?   @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   scanLogs          ScanLog[]
 }

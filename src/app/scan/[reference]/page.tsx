@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Clock,
   Shield,
+  ShieldCheck,
   CheckCircle,
   ArrowRight,
   Sparkles,
@@ -378,6 +379,43 @@ export default function ScanPage() {
   // SuccessOverlay state
   const [scanConfirmed, setScanConfirmed] = useState(false);
   const hasConfirmedRef = useRef(false);
+
+  // ─── LABS — Feature #6: Vérification Identité (PIN) state ───
+  const [showVerifyPinBlock, setShowVerifyPinBlock] = useState(false);
+  const [verifyPinInput, setVerifyPinInput] = useState('');
+  const [verifyPinLoading, setVerifyPinLoading] = useState(false);
+  const [verifyPinResult, setVerifyPinResult] = useState<{
+    verified: boolean;
+    ownerName?: string;
+    message?: string;
+    error?: string;
+    attemptsRemaining?: number;
+  } | null>(null);
+
+  const handleVerifyPin = useCallback(async () => {
+    if (!verifyPinInput || verifyPinInput.length < 4) {
+      setVerifyPinResult({ verified: false, error: 'Veuillez saisir un PIN à 4 chiffres.' });
+      return;
+    }
+    setVerifyPinLoading(true);
+    setVerifyPinResult(null);
+    try {
+      const res = await fetch(`/api/baggage/${reference}/verify-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: verifyPinInput }),
+      });
+      const data = await res.json();
+      setVerifyPinResult(data);
+      if (data.verified) {
+        setVerifyPinInput('');
+      }
+    } catch {
+      setVerifyPinResult({ verified: false, error: 'Erreur réseau' });
+    } finally {
+      setVerifyPinLoading(false);
+    }
+  }, [reference, verifyPinInput]);
 
   useEffect(() => {
     const fetchBaggage = async () => {
@@ -984,6 +1022,88 @@ export default function ScanPage() {
                   {t('finder.gps_auto_shared')}
                 </p>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* ═══ LABS — Feature #6: Vérification d'identité du propriétaire (PIN) ═══ */}
+        <div className="bg-white border-2 border-dashed border-[#1a1a1a] rounded-2xl p-4">
+          <button
+            onClick={() => setShowVerifyPinBlock(!showVerifyPinBlock)}
+            className="w-full flex items-center justify-between text-left"
+          >
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5" style={{ color: INK }} />
+              <div>
+                <h3 className="text-sm font-bold" style={{ color: INK }}>
+                  Vérifier l&apos;identité du propriétaire
+                </h3>
+                <p className="text-xs" style={{ color: INK, opacity: 0.7 }}>
+                  Confirmez que vous rendez le bagage à la bonne personne
+                </p>
+              </div>
+            </div>
+            <span className="text-sm" style={{ color: INK }}>
+              {showVerifyPinBlock ? '▲' : '▼'}
+            </span>
+          </button>
+
+          {showVerifyPinBlock && (
+            <div className="mt-4 space-y-3">
+              <div className="bg-[#fcd616]/20 border border-[#1a1a1a]/20 rounded-xl p-3 text-xs" style={{ color: INK }}>
+                <p className="font-bold mb-1">Comment ça marche ?</p>
+                <p>
+                  1. Demandez à la personne son code PIN propriétaire (4 chiffres)
+                  <br />
+                  2. Saisissez-le ci-dessous
+                  <br />
+                  3. Si valide, le nom du propriétaire s&apos;affiche pour confirmation
+                </p>
+              </div>
+
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="PIN propriétaire (••••)"
+                value={verifyPinInput}
+                onChange={(e) => setVerifyPinInput(e.target.value.replace(/\D/g, ''))}
+                className="w-full text-center text-2xl tracking-[0.5em] bg-slate-50 border-2 border-[#1a1a1a] rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-[#0047d6]"
+                style={{ color: INK }}
+              />
+
+              {verifyPinResult && (
+                <div className={`rounded-xl p-3 text-sm ${
+                  verifyPinResult.verified
+                    ? 'bg-green-50 border border-green-200 text-green-700'
+                    : 'bg-red-50 border border-red-200 text-red-700'
+                }`}>
+                  {verifyPinResult.verified ? (
+                    <>
+                      <p className="font-bold mb-1">✅ Identité vérifiée</p>
+                      <p>Ce bagage appartient à <strong>{verifyPinResult.ownerName}</strong>.</p>
+                      <p className="text-xs mt-1 opacity-80">{verifyPinResult.message}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-bold">❌ {verifyPinResult.error}</p>
+                      {typeof verifyPinResult.attemptsRemaining === 'number' && (
+                        <p className="text-xs mt-1">
+                          Tentatives restantes : {verifyPinResult.attemptsRemaining}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={handleVerifyPin}
+                disabled={verifyPinLoading || !verifyPinInput || verifyPinInput.length < 4}
+                className="w-full py-2.5 px-4 rounded-xl font-bold text-white bg-[#0047d6] hover:bg-[#0033a8] disabled:opacity-50 transition-colors text-sm min-h-[44px]"
+              >
+                {verifyPinLoading ? 'Vérification...' : 'Vérifier le PIN'}
+              </button>
             </div>
           )}
         </div>

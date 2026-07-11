@@ -175,7 +175,8 @@ export async function POST(
     const { location, finderName, finderPhone, message, latitude, longitude, country, city, ipAddress, context: manualContext } = body;
 
     const baggage = await db.baggage.findUnique({
-      where: { reference }
+      where: { reference },
+      include: { agency: true },
     });
 
     if (!baggage || !baggage.whatsappOwner) {
@@ -398,6 +399,102 @@ export async function POST(
       where: { id: baggage.id },
       data: updateData
     });
+
+    // ─── LABS — Feature #1: Géolocalisation passive par IP ───
+    // Envoi email au propriétaire avec date/heure + position approximative
+    // (mode console par défaut si SMTP non configuré → juste loggé en dev)
+    try {
+      const { sendEmail, getScanNotificationEmailTemplate, getCountryMismatchEmailTemplate } = await import('@/lib/email');
+      // Email du propriétaire : email de l'agence si baggage lié à une agence,
+      // sinon fallback générique pour démo (à brancher sur auth voyageur plus tard)
+      const notifEmail = baggage.agency?.email || 'proprietaire@qrbag.com';
+      const appUrlForEmail = process.env.NEXT_PUBLIC_APP_URL || 'https://qrbags.com';
+      const trackingUrlForEmail = `${appUrlForEmail}/suivi/${reference}`;
+
+      const scanDate = new Date().toLocaleDateString('fr-FR');
+      const scanTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      const travelerName = `${baggage.travelerFirstName || ''} ${baggage.travelerLastName || ''}`.trim() || 'Voyageur';
+
+      // ─── 1. Email de notification de scan (systématique) ───
+      const scanTemplate = getScanNotificationEmailTemplate({
+        travelerName,
+        reference: baggage.reference,
+        scanDate,
+        scanTime,
+        city: city || null,
+        country: country || null,
+        countryCode: country || null,
+        ipAddress: ipAddress || 'unknown',
+        finderName: finderName?.trim() || null,
+        finderPhone: finderPhone?.trim() || null,
+        trackingUrl: trackingUrlForEmail,
+      });
+
+      await sendEmail({
+        to: notifEmail,
+        subject: `📍 Votre bagage ${baggage.reference} a été scanné`,
+        html: scanTemplate.html,
+        text: scanTemplate.text,
+        type: 'scan_notification',
+      });
+
+      // ─── LABS — Feature #4: Alerte "Vol de Retour" (pays mismatch) ───
+      // Si le scan vient d'un pays différent de la destination enregistrée,
+      // envoyer une alerte critique + incrémenter suspiciousScanCount.
+      if (country && baggage.destination) {
+        // Si destinationCountry (ISO code) est défini → comparaison stricte
+        // Sinon → comparaison floue sur le texte libre (fallback)
+        let isMatch: boolean;
+        if (baggage.destinationCountry) {
+          // Comparaison stricte : code ISO du scan vs code ISO de la destination
+          // Note : `country` peut être soit un code ISO (2 lettres) soit un nom complet
+          // selon la source. On normalise en comparant les 2 premières lettres.
+          const scanCode = country.toUpperCase().substring(0, 2);
+          const expectedCode = baggage.destinationCountry.toUpperCase();
+          isMatch = scanCode === expectedCode;
+        } else {
+          // Fallback : comparaison floue sur le texte
+          const expectedCountry = baggage.destination.toLowerCase();
+          const scanCountry = country.toLowerCase();
+          isMatch = expectedCountry.includes(scanCountry) || scanCountry.includes(expectedCountry);
+        }
+
+        if (!isMatch) {
+          // Incrémenter le compteur de scans suspects (non-bloquant)
+          try {
+            await db.baggage.update({
+              where: { id: baggage.id },
+              data: { suspiciousScanCount: { increment: 1 } },
+            });
+          } catch {
+            // Non-critique
+          }
+
+          const mismatchTemplate = getCountryMismatchEmailTemplate({
+            travelerName,
+            reference: baggage.reference,
+            scanDate,
+            scanTime,
+            scanCity: city || null,
+            scanCountry: country || null,
+            expectedCountry: baggage.destinationCountry || baggage.destination,
+            destination: baggage.destination,
+            trackingUrl: trackingUrlForEmail,
+          });
+
+          await sendEmail({
+            to: notifEmail,
+            subject: `🚨 ALERTE CRITIQUE — Anomalie de routage ${baggage.reference}`,
+            html: mismatchTemplate.html,
+            text: mismatchTemplate.text,
+            type: 'country_mismatch_alert',
+          });
+        }
+      }
+    } catch (emailError) {
+      // L'envoi email ne doit JAMAIS bloquer le scan
+      console.error('[scan-notification] Email error (non-blocking):', emailError);
+    }
 
     // ─── refonte-7: Nouveau template de message WhatsApp envoyé au propriétaire ───
     // Le frontend construit sa propre URL wa.me via la clé i18n `whatsapp.found_message`.

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
+import { countryNameToCode } from '@/lib/country-utils';
 
 // ─── LABS — Feature #2: Update baggage profile (requires owner PIN) ───
 // Permet au propriétaire de modifier ses coordonnées de voyage en temps réel
@@ -92,7 +93,11 @@ export async function POST(
     if (validated.shipCabin !== undefined) updateData.shipCabin = validated.shipCabin || null;
     if (validated.busCompany !== undefined) updateData.busCompany = validated.busCompany || null;
     if (validated.busLineNumber !== undefined) updateData.busLineNumber = validated.busLineNumber || null;
-    if (validated.destination !== undefined) updateData.destination = validated.destination || null;
+    if (validated.destination !== undefined) {
+      updateData.destination = validated.destination || null;
+      // LABS — Feature #4: mettre à jour aussi le code ISO pays dérivé
+      updateData.destinationCountry = countryNameToCode(validated.destination);
+    }
     if (validated.departureDate !== undefined) {
       updateData.departureDate = validated.departureDate
         ? new Date(validated.departureDate + 'T00:00:00')
@@ -185,6 +190,8 @@ export async function GET(
         busCompany: true,
         busLineNumber: true,
         destination: true,
+        destinationCountry: true,
+        suspiciousScanCount: true,
         departureDate: true,
         departureTime: true,
         transportMode: true,

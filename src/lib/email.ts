@@ -846,3 +846,174 @@ qrbags.com
 
   return { html, text };
 }
+
+// ════════════════════════════════════════════════════════════════
+// LABS — Feature #1: Géolocalisation passive par IP
+// Email envoyé au propriétaire quand son QR est scanné
+// ════════════════════════════════════════════════════════════════
+
+export function getScanNotificationEmailTemplate(data: {
+  travelerName: string;
+  reference: string;
+  scanDate: string;
+  scanTime: string;
+  city: string | null;
+  country: string | null;
+  countryCode: string | null;
+  ipAddress: string;
+  finderName?: string | null;
+  finderPhone?: string | null;
+  trackingUrl: string;
+}): { html: string; text: string } {
+  const location = [data.city, data.country].filter(Boolean).join(', ') || 'Position inconnue';
+  const finderInfo = data.finderName || data.finderPhone
+    ? `
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Trouveur</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">${data.finderName || 'N/A'} ${data.finderPhone ? `(${data.finderPhone})` : ''}</td>
+            </tr>`
+    : '';
+
+  return {
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0047d6; margin: 0;">QRBag</h1>
+          <p style="color: #999; font-size: 12px; margin-top: 5px;">Protection intelligente des bagages</p>
+        </div>
+        <div style="background: #f0f7ff; border: 2px solid #0047d6; border-radius: 10px; padding: 30px;">
+          <h2 style="color: #0047d6; margin-top: 0;">📍 Votre bagage a été scanné</h2>
+          <p style="color: #666;">Bonjour ${data.travelerName},</p>
+          <p style="color: #666;">Votre QR code a été scanné. Voici les détails :</p>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Référence</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee; font-family: monospace;">${data.reference}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Date</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">${data.scanDate} à ${data.scanTime}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Position approximative</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">📍 ${location}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Adresse IP</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee; font-family: monospace;">${data.ipAddress}</td>
+            </tr>
+            ${finderInfo}
+          </table>
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="${data.trackingUrl}" style="background: #0047d6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Voir le suivi complet →</a>
+          </div>
+        </div>
+        <p style="color: #999; font-size: 12px; text-align: center; margin-top: 30px;">
+          Si vous n'êtes pas à l'origine de ce scan, vérifiez le statut de votre bagage.<br/>
+          Position basée sur l'adresse IP (précision ~ville/région).
+        </p>
+      </div>
+    `,
+    text: `
+QRBag — Votre bagage a été scanné
+
+Bonjour ${data.travelerName},
+
+Votre QR code a été scanné. Voici les détails :
+
+Référence : ${data.reference}
+Date : ${data.scanDate} à ${data.scanTime}
+Position approximative : ${location}
+Adresse IP : ${data.ipAddress}
+${data.finderName ? `Trouveur : ${data.finderName} ${data.finderPhone || ''}` : ''}
+
+Voir le suivi complet : ${data.trackingUrl}
+
+— L'équipe QRBag
+`.trim(),
+  };
+}
+
+// LABS — Feature #4: Alerte "Vol de Retour" (pays mismatch)
+// Email envoyé au propriétaire quand le scan vient d'un pays différent
+// de la destination enregistrée.
+export function getCountryMismatchEmailTemplate(data: {
+  travelerName: string;
+  reference: string;
+  scanDate: string;
+  scanTime: string;
+  scanCity: string | null;
+  scanCountry: string | null;
+  expectedCountry: string;
+  destination: string;
+  trackingUrl: string;
+}): { html: string; text: string } {
+  const scanLocation = [data.scanCity, data.scanCountry].filter(Boolean).join(', ') || 'Position inconnue';
+
+  return {
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #e74c3c; margin: 0;">QRBag — Alerte Critique</h1>
+        </div>
+        <div style="background: #fff3f3; border: 2px solid #e74c3c; border-radius: 10px; padding: 30px;">
+          <h2 style="color: #e74c3c; margin-top: 0;">🚨 Anomalie de routage détectée</h2>
+          <p style="color: #666;">Bonjour ${data.travelerName},</p>
+          <p style="color: #666; font-weight: bold;">Votre bagage a été scanné dans un pays qui ne correspond pas à votre destination enregistrée.</p>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Référence</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee; font-family: monospace;">${data.reference}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Date du scan</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">${data.scanDate} à ${data.scanTime}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #999; font-size: 14px; border-bottom: 1px solid #eee;">Destination enregistrée</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">${data.destination} (${data.expectedCountry})</td>
+            </tr>
+            <tr style="background: #ffe5e5;">
+              <td style="padding: 12px 8px; color: #e74c3c; font-size: 14px; border-bottom: 1px solid #eee; font-weight: bold;">📍 Lieu du scan</td>
+              <td style="padding: 12px 8px; font-weight: bold; color: #e74c3c; border-bottom: 1px solid #eee; font-size: 16px;">${scanLocation}</td>
+            </tr>
+          </table>
+          <div style="background: #fff; border-left: 4px solid #e74c3c; padding: 15px; margin-top: 20px; border-radius: 4px;">
+            <p style="margin: 0; color: #333; font-size: 14px;">
+              <strong>⚠️ Que faire ?</strong><br/>
+              1. Vérifiez si vous (ou un proche) êtes à l'origine du scan<br/>
+              2. Si non, contactez immédiatement votre agence<br/>
+              3. Déclarez votre bagage comme perdu via le suivi<br/>
+              4. Contactez le support QRBag si nécessaire
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="${data.trackingUrl}" style="background: #e74c3c; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">🚨 Voir le suivi →</a>
+          </div>
+        </div>
+      </div>
+    `,
+    text: `
+QRBag — ALERTE CRITIQUE : Anomalie de routage détectée
+
+Bonjour ${data.travelerName},
+
+Votre bagage a été scanné dans un pays qui ne correspond pas à votre destination enregistrée.
+
+Référence : ${data.reference}
+Date du scan : ${data.scanDate} à ${data.scanTime}
+Destination enregistrée : ${data.destination} (${data.expectedCountry})
+Lieu du scan : ${scanLocation}
+
+⚠️ Que faire ?
+1. Vérifiez si vous (ou un proche) êtes à l'origine du scan
+2. Si non, contactez immédiatement votre agence
+3. Déclarez votre bagage comme perdu via le suivi
+4. Contactez le support QRBag si nécessaire
+
+Voir le suivi : ${data.trackingUrl}
+
+— L'équipe QRBag
+`.trim(),
+  };
+}

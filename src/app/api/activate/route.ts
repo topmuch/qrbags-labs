@@ -4,6 +4,7 @@ import { calculateExpirationDate } from '@/lib/qr';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { countryNameToCode } from '@/lib/country-utils';
 
 // ─── LABS — Feature #2: Generate a random 4-digit PIN for the owner ───
 // Le PIN sert à :
@@ -66,6 +67,10 @@ export async function POST(request: NextRequest) {
     // Calculate expiration date
     const expiresAt = calculateExpirationDate(baggage.type as 'hajj' | 'voyageur', subtype);
 
+    // ─── LABS — Feature #4: Dérive le code ISO pays depuis le nom de destination ───
+    // Pour permettre la comparaison stricte lors d'un scan (Feature #4).
+    const destinationCountry = countryNameToCode(validatedData.destination);
+
     // ─── LABS — Feature #2: Generate owner PIN (4 digits) ───
     // Hashé bcrypt AVANT stockage. Le PIN en clair est renvoyé une seule fois
     // dans la réponse API pour affichage sur /success (jamais re-divulgué ensuite).
@@ -97,6 +102,8 @@ export async function POST(request: NextRequest) {
         // LABS: PIN propriétaire (hashé)
         ownerPin: ownerPinHash,
         ownerPinSetAt: new Date(),
+        // LABS — Feature #4: code ISO pays destination pour détection mismatch
+        destinationCountry,
       }
     });
 
