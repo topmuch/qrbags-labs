@@ -156,6 +156,7 @@ model Baggage {
 
   agency            Agency?   @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   scanLogs          ScanLog[]
+  damageReports     DamageReport[]
 }
 
 // ScanLog model - tracks all scans for audit
@@ -572,4 +573,24 @@ model LossAlert {
   dismissed   Boolean  @default(false)
   dismissedAt DateTime?
   createdAt   DateTime @default(now())
+}
+
+// ════════════════════════════════════════════════════════════════
+// LABS — Feature D: Signalement de dommage
+// Documentation de l'état du bagage avant/après voyage.
+// Sert de preuve en cas de litige avec la compagnie aérienne.
+// ════════════════════════════════════════════════════════════════
+
+model DamageReport {
+  id          String   @id @default(cuid())
+  baggageId   String
+  type        String   // "before" (pre-contrôle) | "after" (post-contrôle)
+  photos      String   // JSON array of file paths: '["/uploads/damage/abc.jpg", ...]'
+  description String?  // Description de l'état du bagage
+  createdAt   DateTime @default(now())
+
+  baggage     Baggage  @relation(fields: [baggageId], references: [id], onDelete: Cascade)
+
+  @@index([baggageId])
+  @@index([type])
 }

@@ -29,6 +29,7 @@ import {
   FileText,
   HelpCircle,
   Share2,
+  Camera,
 } from 'lucide-react';
 
 // Dynamic imports (avoid SSR issues)
@@ -544,6 +545,31 @@ export default function SuiviPage() {
   const [shareError, setShareError] = useState('');
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+
+  // ─── LABS — Feature D: Preuve de dommage state ───
+  const [damageReports, setDamageReports] = useState<{
+    hasBefore: boolean;
+    hasAfter: boolean;
+    reports: Array<{
+      id: string;
+      type: string;
+      photos: string[];
+      description: string | null;
+      createdAt: string;
+    }>;
+  } | null>(null);
+  const [showDamageBlock, setShowDamageBlock] = useState(false);
+
+  // Fetch damage reports on mount
+  useEffect(() => {
+    if (!data?.baggage?.reference) return;
+    fetch(`/api/baggage/${data.baggage.reference}/damage`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.reports) setDamageReports(d);
+      })
+      .catch(() => {});
+  }, [data?.baggage?.reference]);
 
   // Fetch existing share state on mount
   useEffect(() => {
@@ -1894,6 +1920,57 @@ export default function SuiviPage() {
             {emergencyContacts.notes && (
               <div className="mt-3 bg-[#fcd616]/20 border border-[#1a1a1a]/20 rounded-xl p-2 text-xs text-[#1a1a1a]">
                 💡 {emergencyContacts.notes}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ LABS — Feature D: Preuve de dommage ═══ */}
+        {damageReports && damageReports.reports.length > 0 && (
+          <div className="bg-white border-2 border-dashed border-[#1a1a1a] rounded-2xl p-4">
+            <button
+              onClick={() => setShowDamageBlock(!showDamageBlock)}
+              className="w-full flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-2 flex-1">
+                <Camera className="w-5 h-5 flex-shrink-0 text-[#0047d6]" />
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-[#1a1a1a]">Preuve de dommage</h3>
+                  <p className="text-xs text-[#1a1a1a]/70">
+                    {damageReports.reports.length} rapport(s) — {damageReports.hasBefore ? '✅' : '⬜'} Avant / {damageReports.hasAfter ? '✅' : '⬜'} Après
+                  </p>
+                </div>
+              </div>
+              <span className="text-sm text-[#1a1a1a] flex-shrink-0">
+                {showDamageBlock ? '▲' : '▼'}
+              </span>
+            </button>
+
+            {showDamageBlock && (
+              <div className="mt-4 space-y-3">
+                {damageReports.reports.map((r) => (
+                  <div key={r.id} className="border-l-4 border-[#0047d6] pl-3">
+                    <p className="text-xs font-bold text-[#1a1a1a] mb-1">
+                      {r.type === 'before' ? '📦 Avant voyage' : '📦 Après voyage'}
+                      {' — '}
+                      {new Date(r.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                    <div className="flex gap-2 overflow-x-auto mb-2">
+                      {r.photos.map((p, i) => (
+                        <img key={i} src={p} alt={`Photo ${i + 1}`} className="w-20 h-20 object-cover rounded-lg border border-[#1a1a1a]/20" />
+                      ))}
+                    </div>
+                    {r.description && (
+                      <p className="text-xs text-[#1a1a1a]/70">{r.description}</p>
+                    )}
+                  </div>
+                ))}
+                <a
+                  href={`/suivi/${reference}/edit`}
+                  className="block w-full text-center py-2 px-4 rounded-xl font-bold text-[#0047d6] bg-[#fcd616]/20 border-2 border-[#0047d6]/30 hover:bg-[#fcd616]/40 transition-colors text-xs"
+                >
+                  📸 Ajouter / modifier les photos
+                </a>
               </div>
             )}
           </div>

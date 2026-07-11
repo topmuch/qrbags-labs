@@ -14,6 +14,7 @@ import {
   Train,
   Ship,
   Bus,
+  Camera,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import CountryRegionSelect from '@/components/inscrire/CountryRegionSelect';
@@ -86,6 +87,104 @@ export default function EditBaggagePage() {
   const [showChangePin, setShowChangePin] = useState(false);
   const [newPin, setNewPin] = useState('');
   const [newPinConfirm, setNewPinConfirm] = useState('');
+
+  // ─── LABS — Feature D: Signalement de dommage state ───
+  const [damageReports, setDamageReports] = useState<{
+    hasBefore: boolean;
+    hasAfter: boolean;
+    reports: Array<{
+      id: string;
+      type: string;
+      photos: string[];
+      description: string | null;
+      createdAt: string;
+    }>;
+  }>({ hasBefore: false, hasAfter: false, reports: [] });
+  const [damagePhotos, setDamagePhotos] = useState<string[]>([]); // base64 preview
+  const [damageType, setDamageType] = useState<'before' | 'after'>('before');
+  const [damageDescription, setDamageDescription] = useState('');
+  const [damageLoading, setDamageLoading] = useState(false);
+  const [damageError, setDamageError] = useState('');
+  const [damageSuccess, setDamageSuccess] = useState('');
+
+  // Fetch existing damage reports
+  useEffect(() => {
+    if (!reference) return;
+    fetch(`/api/baggage/${reference}/damage`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.reports) setDamageReports(d);
+      })
+      .catch(() => {});
+  }, [reference]);
+
+  // Handle photo file selection → convert to base64
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newPhotos: string[] = [];
+    const maxPhotos = 3;
+
+    Array.from(files).slice(0, maxPhotos - damagePhotos.length).forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        newPhotos.push(reader.result as string);
+        if (newPhotos.length === Math.min(files.length, maxPhotos - damagePhotos.length)) {
+          setDamagePhotos([...damagePhotos, ...newPhotos]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Remove a photo from the preview
+  const handleRemovePhoto = (idx: number) => {
+    setDamagePhotos(damagePhotos.filter((_, i) => i !== idx));
+  };
+
+  // Save damage report
+  const handleSaveDamage = async () => {
+    if (!pinInput || pinInput.length < 4) {
+      setDamageError('Veuillez saisir votre PIN dans le champ "Confirmer avec votre PIN" ci-dessus.');
+      return;
+    }
+    if (damagePhotos.length === 0) {
+      setDamageError('Veuillez ajouter au moins une photo.');
+      return;
+    }
+    setDamageLoading(true);
+    setDamageError('');
+    setDamageSuccess('');
+    try {
+      const res = await fetch(`/api/baggage/${reference}/damage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pin: pinInput,
+          type: damageType,
+          description: damageDescription,
+          photos: damagePhotos,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDamageSuccess(data.message || 'Rapport enregistré.');
+        setDamagePhotos([]);
+        setDamageDescription('');
+        // Refresh reports
+        const refreshRes = await fetch(`/api/baggage/${reference}/damage`);
+        const refreshData = await refreshRes.json();
+        if (refreshData.reports) setDamageReports(refreshData);
+      } else {
+        setDamageError(data.error || 'Erreur lors de l\'enregistrement');
+      }
+    } catch {
+      setDamageError('Erreur réseau');
+    } finally {
+      setDamageLoading(false);
+    }
+  };
 
   // Fetch baggage data
   useEffect(() => {
@@ -627,6 +726,146 @@ export default function EditBaggagePage() {
             )}
           </button>
         </form>
+
+        {/* ═══ LABS — Feature D: Documentation de l'état du bagage ═══ */}
+        <div className="bg-[#fcd616] border-2 border-dashed border-[#1a1a1a] rounded-2xl p-5">
+          <h2 className="text-lg font-bold mb-1" style={{ color: INK }}>
+            📸 Documentation de l&apos;état du bagage
+          </h2>
+          <p className="text-sm mb-4" style={{ color: INK, opacity: 0.7 }}>
+            Photographiez l&apos;état de votre bagage avant et après le voyage.
+            Sert de preuve en cas de litige avec la compagnie aérienne.
+          </p>
+
+          {/* Existing reports summary */}
+          <div className="flex gap-2 mb-4">
+            <div className={`flex-1 rounded-xl p-2 text-center text-xs font-bold ${damageReports.hasBefore ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-white/50 text-[#1a1a1a]/50'}`}>
+              {damageReports.hasBefore ? '✅' : '⬜'} Avant voyage
+            </div>
+            <div className={`flex-1 rounded-xl p-2 text-center text-xs font-bold ${damageReports.hasAfter ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-white/50 text-[#1a1a1a]/50'}`}>
+              {damageReports.hasAfter ? '✅' : '⬜'} Après voyage
+            </div>
+          </div>
+
+          {/* Show existing reports */}
+          {damageReports.reports.map((r) => (
+            <div key={r.id} className="bg-white/70 border border-[#1a1a1a]/20 rounded-xl p-3 mb-3">
+              <p className="text-xs font-bold mb-2" style={{ color: INK }}>
+                {r.type === 'before' ? '📦 Avant voyage' : '📦 Après voyage'} — {new Date(r.createdAt).toLocaleDateString('fr-FR')}
+              </p>
+              <div className="flex gap-2 overflow-x-auto">
+                {r.photos.map((p, i) => (
+                  <img key={i} src={p} alt={`Photo ${i + 1}`} className="w-20 h-20 object-cover rounded-lg border border-[#1a1a1a]/20" />
+                ))}
+              </div>
+              {r.description && (
+                <p className="text-xs mt-2" style={{ color: INK, opacity: 0.7 }}>{r.description}</p>
+              )}
+            </div>
+          ))}
+
+          {/* Type selector */}
+          <div className="flex gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => { setDamageType('before'); setDamagePhotos([]); setDamageError(''); setDamageSuccess(''); }}
+              className={`flex-1 py-2 px-3 rounded-xl text-sm font-bold border-2 transition-colors ${
+                damageType === 'before' ? 'bg-[#1a1a1a] text-[#fcd616] border-[#1a1a1a]' : 'bg-white/50 text-[#1a1a1a] border-[#1a1a1a]/30'
+              }`}
+            >
+              📦 Avant voyage
+            </button>
+            <button
+              type="button"
+              onClick={() => { setDamageType('after'); setDamagePhotos([]); setDamageError(''); setDamageSuccess(''); }}
+              className={`flex-1 py-2 px-3 rounded-xl text-sm font-bold border-2 transition-colors ${
+                damageType === 'after' ? 'bg-[#1a1a1a] text-[#fcd616] border-[#1a1a1a]' : 'bg-white/50 text-[#1a1a1a] border-[#1a1a1a]/30'
+              }`}
+            >
+              📦 Après voyage
+            </button>
+          </div>
+
+          {/* Photo upload */}
+          <div className="mb-3">
+            <label className="block text-xs font-bold mb-2" style={{ color: INK }}>
+              Photos (1-3, max 10 MB chacune)
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {damagePhotos.map((photo, idx) => (
+                <div key={idx} className="relative w-24 h-24">
+                  <img src={photo} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover rounded-lg border-2 border-[#1a1a1a]" />
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(idx)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {damagePhotos.length < 3 && (
+                <label className="w-24 h-24 border-2 border-dashed border-[#1a1a1a]/40 rounded-lg flex items-center justify-center cursor-pointer hover:bg-[#1a1a1a]/5">
+                  <Camera className="w-6 h-6 text-[#1a1a1a]/50" />
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    onChange={handlePhotoSelect}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="mb-3">
+            <label className="block text-xs font-bold mb-1" style={{ color: INK }}>
+              Description (optionnel)
+            </label>
+            <textarea
+              placeholder={damageType === 'before' ? 'ex: Bagage en bon état, pas de rayures...' : 'ex: Poignée cassée, rayure sur le côté gauche...'}
+              value={damageDescription}
+              onChange={(e) => setDamageDescription(e.target.value)}
+              maxLength={1000}
+              rows={3}
+              className="w-full bg-white border-2 border-[#1a1a1a] rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0047d6]"
+              style={{ color: INK }}
+            />
+          </div>
+
+          {damageError && (
+            <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2 mb-3">{damageError}</p>
+          )}
+          {damageSuccess && (
+            <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-2 mb-3">{damageSuccess}</p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleSaveDamage}
+            disabled={damageLoading || damagePhotos.length === 0 || !pinInput}
+            className="w-full flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-black text-[#fcd616] py-2.5 px-4 rounded-xl font-bold transition-colors text-sm min-h-[44px] disabled:opacity-50"
+          >
+            {damageLoading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Enregistrement...
+              </>
+            ) : (
+              <>
+                <Camera className="w-4 h-4" />
+                Enregistrer {damageType === 'before' ? 'le pre-contrôle' : 'le post-contrôle'}
+              </>
+            )}
+          </button>
+          {!pinInput && (
+            <p className="text-xs text-amber-700 mt-2 text-center">
+              ⚠️ Saisissez votre PIN dans le champ ci-dessus pour activer l&apos;enregistrement.
+            </p>
+          )}
+        </div>
 
         {/* Back to tracking */}
         <Link
