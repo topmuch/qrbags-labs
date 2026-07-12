@@ -31,19 +31,31 @@
         "title": "Traveler Sticker",
         "price": "€4",
         "duration": "5 days",
-        "features": ["1 luggage", "Short-term protection", "Ideal for weekend"]
+        "features": [
+          "1 luggage",
+          "Short-term protection",
+          "Ideal for weekend"
+        ]
       },
       "voyageurTag": {
         "title": "Traveler Tag",
         "price": "€7",
         "duration": "1 year",
-        "features": ["1 luggage", "Long-term protection", "Ideal for frequent travelers"]
+        "features": [
+          "1 luggage",
+          "Long-term protection",
+          "Ideal for frequent travelers"
+        ]
       },
       "hajj": {
         "title": "Hajj",
         "price": "€10",
         "duration": "2 months",
-        "features": ["3 luggage included", "1 cabin + 2 checked", "Managed by agency"]
+        "features": [
+          "3 luggage included",
+          "1 cabin + 2 checked",
+          "Managed by agency"
+        ]
       }
     },
     "contact": {
@@ -154,5 +166,42 @@
     "found_description": "Thank you for helping locate this baggage.",
     "gps_security_note": "Your location will be sent securely.",
     "success_title": "Wahoo!"
+  },
+  "tracking_v2": {
+    "tab_suivi": "Tracking",
+    "tab_actions": "Actions",
+    "tab_history": "History",
+    "tab_contact": "Contact",
+    "bagage_localise": "📍 Baggage located",
+    "bagage_protege": "🛡️ Protected",
+    "bagage_perdu": "🚨 Lost",
+    "bagage_retrouve": "✅ Found",
+    "mode_transit": "Transit mode",
+    "qr_actif": "QR active",
+    "qr_desactive": "QR disabled",
+    "modifier_profil": "Edit my travel profile",
+    "mon_pin": "🔐 My PIN code",
+    "telecharger_pdf": "📄 Download history (PDF)",
+    "partager_suivi": "🔗 Share tracking (family)",
+    "proteger_bagage": "📷 Protect your baggage",
+    "vol_retard": "My flight is delayed",
+    "besoin_aide": "Need help? Assistance center",
+    "declarer_perdu": "Report my baggage as lost",
+    "retrouve": "I found my baggage",
+    "photos_protection": "📷 Protection photos",
+    "conseils": "💡 Tips",
+    "whatsapp": "WhatsApp",
+    "appeler": "Call",
+    "support_qrbag": "Contact QRBag support",
+    "expire_bientot": "⏰ Your QR code expires",
+    "dans_jours": "in {days} days",
+    "demain": "tomorrow",
+    "aujourdhui": "today",
+    "installer_app": "📱 Install the app",
+    "mes_bagages": "My baggages",
+    "recovery_question": "⏰ Have you recovered your baggage?",
+    "oui_recupere": "✅ YES, recovered",
+    "non_pas_encore": "❌ NO, not yet",
+    "contactez_qrbag": "⚠️ Contact QRBag"
   }
 }

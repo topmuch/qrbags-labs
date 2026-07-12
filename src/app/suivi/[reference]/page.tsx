@@ -7,6 +7,7 @@ import { useTrackingSocket } from '@/hooks/useTrackingSocket';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAudioAlert, POLL_INTERVAL_MS } from '@/hooks/useAudioAlert';
 import { usePWAInstallPrompt } from '@/hooks/usePWAInstallPrompt';
+import { usePushNotification } from '@/hooks/usePushNotification';
 import { PreDepartureAlert } from '@/components/PreDepartureAlert';
 import { FeedbackButton } from '@/components/suivi/FeedbackButton';
 import {
@@ -25,6 +26,7 @@ import {
   Globe,
   AlertCircle,
   Download,
+  Bell,
 } from 'lucide-react';
 
 // Dynamic imports
@@ -75,6 +77,7 @@ export default function SuiviPage() {
   // Audio alert
   const { audioEnabled, enableAudio, toggleAudio } = useAudioAlert(lang);
   const { canInstall, promptInstall } = usePWAInstallPrompt();
+  const { isSubscribed: pushSubscribed, subscribe: pushSubscribe, supported: pushSupported } = usePushNotification(reference);
 
   // WebSocket
   const { isConnected: wsConnected, lastEvent } = useTrackingSocket(reference);
@@ -239,6 +242,16 @@ export default function SuiviPage() {
             {wsConnected ? <Wifi className="w-3 h-3 text-green-400" /> : <WifiOff className="w-3 h-3 text-white/40" />}
           </div>
           <div className="flex items-center gap-2">
+            {pushSupported && !pushSubscribed && (
+              <button onClick={pushSubscribe} className="p-2 text-white/70 hover:text-white" aria-label="Activer les notifications push">
+                <Bell className="w-4 h-4" />
+              </button>
+            )}
+            {pushSubscribed && (
+              <span className="text-green-400" title="Notifications push activées">
+                <Bell className="w-4 h-4" />
+              </span>
+            )}
             <button onClick={toggleAudio} className="p-2 text-white/70 hover:text-white" aria-label="Audio">
               {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>

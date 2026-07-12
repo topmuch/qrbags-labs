@@ -31,19 +31,31 @@
         "title": "ملصق المسافر",
         "price": "4 €",
         "duration": "5 أيام",
-        "features": ["حقيبة واحدة", "حماية قصيرة المدى", "مثالي لعطلة نهاية الأسبوع"]
+        "features": [
+          "حقيبة واحدة",
+          "حماية قصيرة المدى",
+          "مثالي لعطلة نهاية الأسبوع"
+        ]
       },
       "voyageurTag": {
         "title": "بطاقة المسافر",
         "price": "7 €",
         "duration": "سنة واحدة",
-        "features": ["حقيبة واحدة", "حماية طويلة المدى", "مثالي للمسافرين المتكررين"]
+        "features": [
+          "حقيبة واحدة",
+          "حماية طويلة المدى",
+          "مثالي للمسافرين المتكررين"
+        ]
       },
       "hajj": {
         "title": "الحج",
         "price": "10 €",
         "duration": "شهران",
-        "features": ["3 حقائب مشمولة", "1 يد + 2 تسليم", "إدارة الوكالة"]
+        "features": [
+          "3 حقائب مشمولة",
+          "1 يد + 2 تسليم",
+          "إدارة الوكالة"
+        ]
       }
     },
     "contact": {
@@ -154,5 +166,42 @@
     "found_description": "شكراً لمساعدتك في تحديد موقع هذه الأمتعة.",
     "gps_security_note": "سيتم إرسال موقعك بشكل آمن.",
     "success_title": "واوو!"
+  },
+  "tracking_v2": {
+    "tab_suivi": "تتبع",
+    "tab_actions": "إجراءات",
+    "tab_history": "السجل",
+    "tab_contact": "اتصال",
+    "bagage_localise": "📍 تم تحديد موقع الأمتعة",
+    "bagage_protege": "🛡️ محمي",
+    "bagage_perdu": "🚨 مفقود",
+    "bagage_retrouve": "✅ تم العثور عليه",
+    "mode_transit": "وضع العبور",
+    "qr_actif": "رمز QR نشط",
+    "qr_desactive": "رمز QR معطل",
+    "modifier_profil": "تعديل ملف سفري",
+    "mon_pin": "🔐 رمز PIN الخاص بي",
+    "telecharger_pdf": "📄 تحميل المسار (PDF)",
+    "partager_suivi": "🔗 مشاركة التتبع (العائلة)",
+    "proteger_bagage": "📷 احمِ أمتعتك",
+    "vol_retard": "تأخر رحلتي",
+    "besoin_aide": "بحاجة للمساعدة؟ مركز المساعدة",
+    "declarer_perdu": "الإبلاغ عن فقدان أمتتي",
+    "retrouve": "وجدت أمتتي",
+    "photos_protection": "📷 صور الحماية",
+    "conseils": "💡 نصائح",
+    "whatsapp": "واتساب",
+    "appeler": "اتصال",
+    "support_qrbag": "اتصل بدعم QRBag",
+    "expire_bientot": "⏰ ينتهي رمز QR الخاص بك",
+    "dans_jours": "خلال {days} أيام",
+    "demain": "غداً",
+    "aujourdhui": "اليوم",
+    "installer_app": "📱 تثبيت التطبيق",
+    "mes_bagages": "أمتعتي",
+    "recovery_question": "⏰ هل استلمت أمتعتك؟",
+    "oui_recupere": "✅ نعم، استلمتها",
+    "non_pas_encore": "❌ لا، ليس بعد",
+    "contactez_qrbag": "⚠️ اتصل بـ QRBag"
   }
 }

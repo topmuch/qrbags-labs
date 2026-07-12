@@ -31,19 +31,31 @@
         "title": "Voyageur Sticker",
         "price": "4 €",
         "duration": "5 jours",
-        "features": ["1 bagage", "Protection courte durée", "Idéal pour week-end"]
+        "features": [
+          "1 bagage",
+          "Protection courte durée",
+          "Idéal pour week-end"
+        ]
       },
       "voyageurTag": {
         "title": "Voyageur Étiquette",
         "price": "7 €",
         "duration": "1 an",
-        "features": ["1 bagage", "Protection longue durée", "Idéal pour voyageurs fréquents"]
+        "features": [
+          "1 bagage",
+          "Protection longue durée",
+          "Idéal pour voyageurs fréquents"
+        ]
       },
       "hajj": {
         "title": "Hajj",
         "price": "10 €",
         "duration": "2 mois",
-        "features": ["3 bagages inclus", "1 cabine + 2 soutes", "Gestion par l'agence"]
+        "features": [
+          "3 bagages inclus",
+          "1 cabine + 2 soutes",
+          "Gestion par l'agence"
+        ]
       }
     },
     "contact": {
@@ -154,5 +166,42 @@
     "found_description": "Merci d'avoir aidé à localiser ce bagage.",
     "gps_security_note": "Votre position sera envoyée de manière sécurisée.",
     "success_title": "Wahoo !"
+  },
+  "tracking_v2": {
+    "tab_suivi": "Suivi",
+    "tab_actions": "Actions",
+    "tab_history": "Historique",
+    "tab_contact": "Contact",
+    "bagage_localise": "📍 Bagage localisé",
+    "bagage_protege": "🛡️ Protégé",
+    "bagage_perdu": "🚨 Perdu",
+    "bagage_retrouve": "✅ Retrouvé",
+    "mode_transit": "Mode En transit",
+    "qr_actif": "QR actif",
+    "qr_desactive": "QR désactivé",
+    "modifier_profil": "Modifier mon profil de voyage",
+    "mon_pin": "🔐 Mon code PIN",
+    "telecharger_pdf": "📄 Télécharger le parcours (PDF)",
+    "partager_suivi": "🔗 Partager le suivi (famille)",
+    "proteger_bagage": "📷 Protégez votre bagage",
+    "vol_retard": "Mon vol a du retard",
+    "besoin_aide": "Besoin d'aide ? Centre d'assistance",
+    "declarer_perdu": "Déclarer mon bagage perdu",
+    "retrouve": "J'ai retrouvé mon bagage",
+    "photos_protection": "📷 Photos de protection",
+    "conseils": "💡 Conseils",
+    "whatsapp": "WhatsApp",
+    "appeler": "Appeler",
+    "support_qrbag": "Contacter le support QRBag",
+    "expire_bientot": "⏰ Votre QR code expire",
+    "dans_jours": "dans {days} jours",
+    "demain": "demain",
+    "aujourdhui": "aujourd'hui",
+    "installer_app": "📱 Installer l'application",
+    "mes_bagages": "Mes bagages",
+    "recovery_question": "⏰ Avez-vous récupéré votre bagage ?",
+    "oui_recupere": "✅ OUI, récupéré",
+    "non_pas_encore": "❌ NON, pas encore",
+    "contactez_qrbag": "⚠️ Contactez QRBag"
   }
 }

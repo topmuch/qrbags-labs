@@ -657,3 +657,73 @@ body * {
     transform: translateX(0);
   }
 }
+
+/* ═══ Admin Mobile Responsive ═══ */
+@media (max-width: 768px) {
+  /* Sidebar: becomes bottom bar on mobile */
+  aside[class*="w-[280px]"] {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+    z-index: 50 !important;
+    transform: none !important;
+    border-top: 2px solid rgba(255,255,255,0.1) !important;
+    border-right: none !important;
+  }
+
+  /* Main content: full width on mobile */
+  main[class*="flex-1"] {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Admin tables: horizontal scroll */
+  .admin-table, table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Cards: stack vertically */
+  .grid[class*="md:grid-cols"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Padding reduction on mobile */
+  main[class*="p-6"] {
+    padding: 1rem !important;
+  }
+
+  main[class*="lg:p-8"] {
+    padding: 1rem !important;
+  }
+
+  /* Hide desktop-only elements */
+  .hidden.md\\:flex {
+    display: none !important;
+  }
+
+  /* Header: smaller on mobile */
+  header[class*="px-6"] {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Search bar: full width on mobile */
+  .w-80 {
+    width: 100% !important;
+  }
+}
+
+/* ═══ Dark mode for /suivi brand colors (keep brand colors) ═══ */
+@media (prefers-color-scheme: dark) {
+  /* /suivi keeps blue bg + yellow cards — brand identity */
+  /* Only admin area uses dark mode via .dark class */
+}

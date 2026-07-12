@@ -405,6 +405,7 @@ export async function POST(
     // (mode console par défaut si SMTP non configuré → juste loggé en dev)
     try {
       const { sendEmail, getScanNotificationEmailTemplate, getCountryMismatchEmailTemplate } = await import('@/lib/email');
+      const { sendPushNotification } = await import('@/lib/web-push');
       // Email du propriétaire : email de l'agence si baggage lié à une agence,
       // sinon fallback générique pour démo (à brancher sur auth voyageur plus tard)
       const notifEmail = baggage.agency?.email || 'proprietaire@qrbag.com';
@@ -437,6 +438,15 @@ export async function POST(
         text: scanTemplate.text,
         type: 'scan_notification',
       });
+
+      // ─── Push notification (VAPID) ───
+      // Envoi une notification push native au passager (même si app fermée)
+      await sendPushNotification(
+        baggage.reference,
+        '📍 QRBag — Bagage scanné',
+        `Votre bagage ${baggage.reference} vient d'être scanné${city ? ` à ${city}` : ''}.`,
+        trackingUrlForEmail
+      );
 
       // ─── LABS — Feature #4: Alerte "Vol de Retour" (pays mismatch) ───
       // Si le scan vient d'un pays différent de la destination enregistrée,
