@@ -36,7 +36,7 @@ import {
 const LeafletMap = dynamic(() => import('@/components/LeafletMap'), { ssr: false, loading: () => <MapSkeleton /> });
 import { SocialShareButtons } from '@/components/SocialShareButtons';
 import { ReviewModal } from '@/components/ReviewModal';
-import { LossAlertBanner } from '@/components/LossAlertBanner';
+import { PreDepartureAlert } from '@/components/PreDepartureAlert';
 import { useTrackingSocket } from '@/hooks/useTrackingSocket';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Language, LANGUAGE_NAMES } from '@/lib/i18n';
@@ -1247,8 +1247,8 @@ export default function SuiviPage() {
           </div>
         )}
 
-        {/* ═══ PROACTIVE LOSS ALERT ═══ */}
-        <LossAlertBanner
+        {/* ═══ LABS — Pre-Departure Smart Alert (remplace LossAlertBanner) ═══ */}
+        <PreDepartureAlert
           reference={reference}
           departureDate={baggage.departureDate}
           departureTime={baggage.departureTime}
