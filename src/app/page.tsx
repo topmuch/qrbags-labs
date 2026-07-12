@@ -1163,13 +1163,15 @@ export default function HomePage() {
   const router = useRouter();
 
   // ─── LABS — PWA redirect: si ?from=pwa, rediriger vers /suivi/[last_ref] ───
+  // Redirection immédiate (avant le rendu pour éviter le flash de la page d'accueil)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     if (params.get('from') === 'pwa') {
       const lastRef = localStorage.getItem('qrbag_last_reference');
       if (lastRef) {
-        router.replace(`/suivi/${lastRef}`);
+        // Redirection immédiate — pas de flash
+        window.location.replace(`/suivi/${lastRef}`);
       }
     }
   }, [router]);

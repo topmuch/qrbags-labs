@@ -187,9 +187,9 @@ export default function SuiviPage() {
           <p className="text-sm mb-4" style={{ color: INK, opacity: 0.7 }}>
             Ce code QR n&apos;existe pas ou n&apos;est pas encore activé.
           </p>
-          <a href="/" className="inline-block bg-[#0047d6] text-white px-6 py-3 rounded-xl font-bold">
-            Retour à l&apos;accueil
-          </a>
+          <p className="text-xs" style={{ color: INK, opacity: 0.5 }}>
+            Contactez le support : contact@qrbag.com
+          </p>
         </div>
       </main>
     );
@@ -334,7 +334,9 @@ export default function SuiviPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex flex-col items-center justify-center py-3 relative transition-colors ${
-                  isActive ? 'text-[#0047d6]' : 'text-slate-400'
+                  isActive
+                    ? 'bg-[#0047d6] text-white'
+                    : 'bg-white text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 <Icon className="w-5 h-5 mb-0.5" />

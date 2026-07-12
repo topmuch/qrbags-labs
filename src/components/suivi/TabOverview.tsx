@@ -97,27 +97,27 @@ export function TabOverview({
 
       {/* Finder info */}
       {data.lastFinder && (data.lastFinder.name || data.lastFinder.phone) && (
-        <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4">
-          <h2 className="text-xs uppercase tracking-widest font-bold mb-3 text-green-700 flex items-center gap-2">
+        <div className="bg-green-600 border-2 border-green-700 rounded-2xl p-4">
+          <h2 className="text-xs uppercase tracking-widest font-bold mb-3 text-white flex items-center gap-2">
             <User className="w-4 h-4" /> Trouveur
           </h2>
           <div className="space-y-2 text-sm">
             {data.lastFinder.name && (
               <div className="flex items-center justify-between">
-                <span className="text-green-600">Nom</span>
-                <span className="font-bold text-green-700">{data.lastFinder.name}</span>
+                <span className="text-green-200">Nom</span>
+                <span className="font-bold text-white">{data.lastFinder.name}</span>
               </div>
             )}
             {data.lastFinder.phone && (
               <div className="flex items-center justify-between">
-                <span className="text-green-600">Téléphone</span>
-                <a href={`tel:${data.lastFinder.phone}`} className="font-bold text-green-700 underline" dir="ltr">
+                <span className="text-green-200">Téléphone</span>
+                <a href={`tel:${data.lastFinder.phone}`} className="font-bold text-white underline" dir="ltr">
                   {data.lastFinder.phone}
                 </a>
               </div>
             )}
           </div>
-          <p className="text-xs text-green-600 mt-3 bg-green-100 rounded-lg p-2">
+          <p className="text-xs text-green-100 mt-3 bg-green-700/50 rounded-lg p-2">
             💡 Allez dans l&apos;onglet <strong>Contact</strong> pour appeler ou envoyer un WhatsApp.
           </p>
         </div>

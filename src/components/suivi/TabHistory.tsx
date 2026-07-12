@@ -61,6 +61,17 @@ export function TabHistory({
                     <User className="w-3 h-3" />{scan.finderName}
                   </p>
                 )}
+                {scan.hasMap && scan.latitude && scan.longitude && (
+                  <a
+                    href={`https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-1.5 text-xs font-bold text-[#0047d6] hover:underline"
+                  >
+                    <MapPin className="w-3 h-3" />
+                    📍 Voir sur Google Maps ({scan.latitude.toFixed(4)}, {scan.longitude.toFixed(4)})
+                  </a>
+                )}
               </div>
             </div>
           ))}
