@@ -1927,7 +1927,7 @@ export default function SuiviPage() {
         )}
 
         {/* ═══ LABS — Feature D: Photos de protection bagage ═══ */}
-        {damageReports && damageReports.reports.length > 0 && (
+        {damageReports && damageReports.reports.length > 0 ? (
           <div className="bg-white border-2 border-dashed border-[#1a1a1a] rounded-2xl p-4">
             <button
               onClick={() => setShowDamageBlock(!showDamageBlock)}
@@ -1977,6 +1977,25 @@ export default function SuiviPage() {
               </div>
             )}
           </div>
+        ) : (
+          /* ─── Bloc incitatif (quand aucune photo n'a encore été prise) ─── */
+          <a
+            href={`/suivi/${reference}/edit`}
+            className="block bg-[#fcd616] border-2 border-dashed border-[#1a1a1a] rounded-2xl p-4 hover:bg-[#fcd616]/80 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#1a1a1a] flex items-center justify-center flex-shrink-0">
+                <Camera className="w-5 h-5 text-[#fcd616]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-[#1a1a1a]">📷 Protégez votre bagage en cas de casse</h3>
+                <p className="text-xs text-[#1a1a1a]/70 mt-0.5">
+                  Prenez une photo de votre valise avant le vol. En cas de dommage, vous serez dédommagé.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-[#1a1a1a] flex-shrink-0">→</span>
+            </div>
+          </a>
         )}
 
         {/* ═══ LABS — Feature E: Lien vers page Assistance ═══ */}
