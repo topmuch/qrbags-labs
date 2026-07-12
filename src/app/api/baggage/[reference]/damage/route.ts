@@ -26,6 +26,10 @@ import { db } from '@/lib/db';
 // GET /api/baggage/[reference]/damage
 //   Renvoie tous les rapports de dommage (avant + après) pour ce bagage.
 
+// Route segment config — autorise les gros payloads (photos base64)
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 const damageSchema = z.object({
   pin: z.string().min(4).max(8),
   type: z.enum(['before', 'after']),
@@ -52,16 +56,26 @@ async function savePhoto(base64Data: string): Promise<string> {
   const filename = `${crypto.randomUUID()}.jpg`;
   const filepath = path.join(UPLOAD_DIR, filename);
 
-  // S'assurer que le dossier existe
-  if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  // S'assurer que le dossier existe (avec gestion d'erreur)
+  try {
+    if (!fs.existsSync(UPLOAD_DIR)) {
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    }
+  } catch (dirErr) {
+    console.error('[damage] Cannot create upload dir:', UPLOAD_DIR, dirErr);
+    throw new Error('Impossible de créer le dossier de stockage. Contactez le support.');
   }
 
   // Compresser avec sharp : resize 800x800 max + JPEG quality 80
-  await sharp(buffer)
-    .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: 80 })
-    .toFile(filepath);
+  try {
+    await sharp(buffer)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toFile(filepath);
+  } catch (sharpErr) {
+    console.error('[damage] Sharp compression error:', sharpErr);
+    throw new Error('Erreur lors du traitement de l\'image. Réessayez avec une autre photo.');
+  }
 
   // Retourner le chemin public
   return `/uploads/damage/${filename}`;

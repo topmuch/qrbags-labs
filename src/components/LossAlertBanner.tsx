@@ -13,11 +13,12 @@ interface LossAlert {
 interface LossAlertBannerProps {
   reference: string;
   departureDate: string | null;
+  departureTime?: string | null;
   hasScans: boolean;
   lang: string;
 }
 
-export function LossAlertBanner({ reference, departureDate, hasScans, lang }: LossAlertBannerProps) {
+export function LossAlertBanner({ reference, departureDate, departureTime, hasScans, lang }: LossAlertBannerProps) {
   const [alerts, setAlerts] = useState<LossAlert[]>([]);
   const [dismissing, setDismissing] = useState<string | null>(null);
 
@@ -40,11 +41,27 @@ export function LossAlertBanner({ reference, departureDate, hasScans, lang }: Lo
   }, [reference]);
 
   // Proactive loss detection (client-side check)
+  // BUG FIX: Combiner departureDate + departureTime pour avoir l'heure réelle de départ.
+  // Avant : departureDate seul était à minuit (T00:00:00) → fausse alerte "vol parti il y a 20h"
+  // Maintenant : si departureTime est fourni (ex: "20:00"), on l'ajoute à la date.
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(() => {
     if (!departureDate || hasScans) return null;
+
+    // Construire la date de départ réelle (date + heure)
     const depDate = new Date(departureDate);
+    if (departureTime) {
+      // departureTime = "HH:MM" → on set les heures/minutes
+      const [hours, minutes] = departureTime.split(':').map(Number);
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        depDate.setHours(hours, minutes, 0, 0);
+      }
+    }
+
     const now = new Date();
     const hoursSinceDeparture = (now.getTime() - depDate.getTime()) / (1000 * 60 * 60);
+
+    // N'afficher l'alerte QUE si le vol est réellement parti (hoursSinceDeparture > 4)
+    // ET pas trop vieux (< 48h)
     if (hoursSinceDeparture > 4 && hoursSinceDeparture < 48) {
       const labels: Record<string, string> = {
         fr: `⚠️ Votre vol est parti il y a ${Math.round(hoursSinceDeparture)}h. Aucun scan de votre bagage détecté. Vérifiez au comptoir bagages.`,

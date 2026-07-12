@@ -1251,6 +1251,7 @@ export default function SuiviPage() {
         <LossAlertBanner
           reference={reference}
           departureDate={baggage.departureDate}
+          departureTime={baggage.departureTime}
           hasScans={data.scans.length > 0}
           lang={lang}
         />
