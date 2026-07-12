@@ -10,9 +10,9 @@ export async function PUT(
     const { reference } = await params;
     const body = await request.json();
 
-    // Check if baggage exists
-    const existingBaggage = await db.baggage.findUnique({
-      where: { reference },
+    // Check if baggage exists (by reference OR id)
+    const existingBaggage = await db.baggage.findFirst({
+      where: { OR: [{ reference }, { id: reference }] },
     });
 
     if (!existingBaggage) {
@@ -40,7 +40,7 @@ export async function PUT(
 
     // Update the baggage
     const updatedBaggage = await db.baggage.update({
-      where: { reference },
+      where: { id: existingBaggage.id },
       data: updateData,
     });
 
@@ -65,7 +65,7 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete a baggage by ID
+// DELETE - Delete a baggage by reference OR id
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ reference: string }> }
@@ -73,9 +73,9 @@ export async function DELETE(
   try {
     const { reference } = await params;
 
-    // Check if baggage exists
-    const baggage = await db.baggage.findUnique({
-      where: { reference },
+    // Check if baggage exists (by reference OR id)
+    const baggage = await db.baggage.findFirst({
+      where: { OR: [{ reference }, { id: reference }] },
     });
 
     if (!baggage) {
@@ -92,7 +92,7 @@ export async function DELETE(
 
     // Delete the baggage
     await db.baggage.delete({
-      where: { reference },
+      where: { id: baggage.id },
     });
 
     return NextResponse.json({
@@ -109,7 +109,7 @@ export async function DELETE(
   }
 }
 
-// GET - Get a single baggage by ID
+// GET - Get a single baggage by reference OR id
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ reference: string }> }
@@ -117,8 +117,14 @@ export async function GET(
   try {
     const { reference } = await params;
 
-    const baggage = await db.baggage.findUnique({
-      where: { reference },
+    // Chercher par reference (ex: VOL26-NHQ8DE) OU par id (ex: clxxxxxxx)
+    const baggage = await db.baggage.findFirst({
+      where: {
+        OR: [
+          { reference },
+          { id: reference },
+        ]
+      },
       include: { agency: true },
     });
 
