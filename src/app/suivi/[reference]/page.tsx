@@ -1926,7 +1926,7 @@ export default function SuiviPage() {
           </div>
         )}
 
-        {/* ═══ LABS — Feature D: Preuve de dommage ═══ */}
+        {/* ═══ LABS — Feature D: Photos de protection bagage ═══ */}
         {damageReports && damageReports.reports.length > 0 && (
           <div className="bg-white border-2 border-dashed border-[#1a1a1a] rounded-2xl p-4">
             <button
@@ -1936,9 +1936,11 @@ export default function SuiviPage() {
               <div className="flex items-center gap-2 flex-1">
                 <Camera className="w-5 h-5 flex-shrink-0 text-[#0047d6]" />
                 <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-[#1a1a1a]">Preuve de dommage</h3>
+                  <h3 className="text-sm font-bold text-[#1a1a1a]">📷 Photos de protection</h3>
                   <p className="text-xs text-[#1a1a1a]/70">
-                    {damageReports.reports.length} rapport(s) — {damageReports.hasBefore ? '✅' : '⬜'} Avant / {damageReports.hasAfter ? '✅' : '⬜'} Après
+                    {damageReports.hasBefore && damageReports.hasAfter
+                      ? '✅ AVANT + APRÈS documentés — vous êtes protégé'
+                      : `${damageReports.reports.length} photo(s) — ${damageReports.hasBefore ? '✅ Avant' : '⬜ Avant'} / ${damageReports.hasAfter ? '✅ Après' : '⬜ Après'}`}
                   </p>
                 </div>
               </div>

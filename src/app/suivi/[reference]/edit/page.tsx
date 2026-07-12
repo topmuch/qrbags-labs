@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  ArrowRight,
   KeyRound,
   Save,
   AlertCircle,
@@ -730,12 +731,58 @@ export default function EditBaggagePage() {
         {/* ═══ LABS — Feature D: Documentation de l'état du bagage ═══ */}
         <div className="bg-[#fcd616] border-2 border-dashed border-[#1a1a1a] rounded-2xl p-5">
           <h2 className="text-lg font-bold mb-1" style={{ color: INK }}>
-            📸 Documentation de l&apos;état du bagage
+            📸 Protégez votre bagage en cas de casse
           </h2>
           <p className="text-sm mb-4" style={{ color: INK, opacity: 0.7 }}>
-            Photographiez l&apos;état de votre bagage avant et après le voyage.
-            Sert de preuve en cas de litige avec la compagnie aérienne.
+            Photos horodatées = preuve irréfutable pour votre assurance et la compagnie aérienne.
           </p>
+
+          {/* ─── Explication visuelle "Pourquoi ?" ─── */}
+          <div className="bg-white/80 border border-[#1a1a1a]/20 rounded-xl p-4 mb-4">
+            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: INK }}>
+              💡 Pourquoi c&apos;est important ?
+            </p>
+            <div className="space-y-3 text-sm" style={{ color: INK }}>
+              {/* Scénario 1 : sans photos */}
+              <div className="flex items-start gap-3">
+                <span className="text-xl flex-shrink-0">❌</span>
+                <div>
+                  <p className="font-bold">Sans photos : vous ne pouvez rien prouver</p>
+                  <p className="opacity-70 text-xs mt-0.5">
+                    Compagnie : &quot;Votre valise était peut-être déjà abîmée&quot; → 0€ de dédommagement
+                  </p>
+                </div>
+              </div>
+              {/* Scénario 2 : avec photos */}
+              <div className="flex items-start gap-3">
+                <span className="text-xl flex-shrink-0">✅</span>
+                <div>
+                  <p className="font-bold">Avec photos : preuve horodatée impossible à contester</p>
+                  <p className="opacity-70 text-xs mt-0.5">
+                    Photo AVANT (valise neuve) + Photo APRÈS (valise cassée) = dédommagement garanti
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mini timeline visuelle */}
+            <div className="mt-4 flex items-center gap-2 text-xs">
+              <div className="flex-1 bg-green-100 border border-green-300 rounded-lg p-2 text-center">
+                <p className="font-bold text-green-700">📷 AVANT</p>
+                <p className="text-green-600 text-[10px]">Photo de la valise en bon état</p>
+              </div>
+              <Plane className="w-4 h-4 flex-shrink-0" style={{ color: INK }} />
+              <div className="flex-1 bg-red-100 border border-red-300 rounded-lg p-2 text-center">
+                <p className="font-bold text-red-700">📷 APRÈS</p>
+                <p className="text-red-600 text-[10px]">Photo des dégâts éventuels</p>
+              </div>
+              <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: INK }} />
+              <div className="flex-1 bg-blue-100 border border-blue-300 rounded-lg p-2 text-center">
+                <p className="font-bold text-blue-700">💰</p>
+                <p className="text-blue-600 text-[10px]">Dédommagement</p>
+              </div>
+            </div>
+          </div>
 
           {/* Existing reports summary */}
           <div className="flex gap-2 mb-4">
