@@ -575,9 +575,8 @@ export default function ScanPage() {
         baggageData?.baggage?.type || 'voyageur'
       );
       const ownerNumber = baggageData?.baggage?.whatsappOwner?.replace(/\D/g, '') || FALLBACK_PHONE;
-      // Use api.whatsapp.com directly instead of wa.me — wa.me corrupts 4-byte UTF-8 emojis (🎉📍👤📞💬👉💪)
-      // during its redirect to api.whatsapp.com (replaces them with U+FFFD replacement character).
-      const url = `https://api.whatsapp.com/send/?phone=${ownerNumber}&text=${message}`;
+      // Use wa.me which opens the WhatsApp APP directly on mobile (api.whatsapp.com opens the website)
+      const url = `https://wa.me/${ownerNumber}?text=${message}`;
 
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 

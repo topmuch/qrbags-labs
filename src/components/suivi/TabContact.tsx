@@ -81,7 +81,7 @@ export function TabContact({
       {/* Action buttons */}
       <div className="grid grid-cols-2 gap-3">
         <a
-          href={`https://api.whatsapp.com/send/?phone=${waPhone}&text=${waMessage}`}
+          href={`https://wa.me/${waPhone}?text=${waMessage}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex flex-col items-center justify-center gap-1 bg-[#25D366] hover:bg-[#1ebe5d] text-white py-4 rounded-xl font-bold transition-colors"
