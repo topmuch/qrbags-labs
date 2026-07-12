@@ -30,6 +30,7 @@ import {
   HelpCircle,
   Share2,
   Camera,
+  KeyRound,
 } from 'lucide-react';
 
 // Dynamic imports (avoid SSR issues)
@@ -532,6 +533,41 @@ export default function SuiviPage() {
   const [pdfPinInput, setPdfPinInput] = useState('');
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState('');
+
+  // ─── LABS — PIN recovery (regenerate) state ───
+  const [showPinRecoveryModal, setShowPinRecoveryModal] = useState(false);
+  const [pinRecoveryInput, setPinRecoveryInput] = useState('');
+  const [pinRecoveryLoading, setPinRecoveryLoading] = useState(false);
+  const [pinRecoveryError, setPinRecoveryError] = useState('');
+  const [pinRecoveryResult, setPinRecoveryResult] = useState<string | null>(null);
+
+  const handlePinRecovery = useCallback(async () => {
+    if (!pinRecoveryInput || pinRecoveryInput.length < 4) {
+      setPinRecoveryError('Veuillez saisir votre PIN actuel (4 chiffres).');
+      return;
+    }
+    setPinRecoveryLoading(true);
+    setPinRecoveryError('');
+    setPinRecoveryResult(null);
+    try {
+      const res = await fetch(`/api/baggage/${reference}/regenerate-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinRecoveryInput }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPinRecoveryResult(data.ownerPin);
+        setPinRecoveryInput('');
+      } else {
+        setPinRecoveryError(data.error || 'Erreur');
+      }
+    } catch {
+      setPinRecoveryError('Erreur réseau');
+    } finally {
+      setPinRecoveryLoading(false);
+    }
+  }, [reference, pinRecoveryInput]);
 
   // ─── LABS — Feature F: Coordonnées d'urgence par destination ───
   const [emergencyContacts, setEmergencyContacts] = useState<{
@@ -1464,6 +1500,13 @@ export default function SuiviPage() {
             Modifier mon profil de voyage
           </a>
           <button
+            onClick={() => { setShowPinRecoveryModal(true); setPinRecoveryError(''); setPinRecoveryInput(''); setPinRecoveryResult(null); }}
+            className="w-full flex items-center justify-center gap-2 bg-white text-slate-600 hover:bg-slate-100 border-2 border-slate-300 py-2.5 px-4 rounded-xl font-bold transition-colors text-sm min-h-[44px]"
+          >
+            <KeyRound className="w-4 h-4" />
+            🔐 Mon code PIN
+          </button>
+          <button
             onClick={() => { setShowPdfModal(true); setPdfError(''); setPdfPinInput(''); }}
             className="w-full flex items-center justify-center gap-2 bg-[#fcd616] hover:bg-[#1a1a1a] hover:text-[#fcd616] text-[#1a1a1a] border-2 border-[#1a1a1a] py-2.5 px-4 rounded-xl font-bold transition-colors text-sm min-h-[44px]"
           >
@@ -2212,6 +2255,91 @@ export default function SuiviPage() {
         reference={reference}
         lang={lang}
       />
+
+      {/* ═══ LABS — Modal récupération PIN ═══ */}
+      {showPinRecoveryModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#1a1a1a]">🔐 Mon code PIN</h3>
+              <button
+                onClick={() => { setShowPinRecoveryModal(false); setPinRecoveryInput(''); setPinRecoveryError(''); setPinRecoveryResult(null); }}
+                className="text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {pinRecoveryResult ? (
+              /* Nouveau PIN affiché */
+              <div className="text-center">
+                <p className="text-sm text-slate-600 mb-3">
+                  Voici votre nouveau code PIN. <strong>Notez-le précieusement,</strong> il ne sera plus jamais affiché.
+                </p>
+                <div className="bg-[#fcd616] border-2 border-dashed border-[#1a1a1a] rounded-xl py-6 mb-4">
+                  <p className="text-5xl font-mono font-bold tracking-[0.5em]" style={{ color: INK }}>
+                    {pinRecoveryResult}
+                  </p>
+                </div>
+                <p className="text-xs text-slate-500 mb-4">
+                  Ce PIN sert à :<br/>
+                  • Modifier votre profil de voyage<br/>
+                  • Activer/désactiver le mode En transit<br/>
+                  • Vérifier l&apos;identité du propriétaire (page trouveur)<br/>
+                  • Télécharger le parcours PDF<br/>
+                  • Partager le suivi avec un proche
+                </p>
+                <button
+                  onClick={() => { setShowPinRecoveryModal(false); setPinRecoveryResult(null); }}
+                  className="w-full py-3 px-4 rounded-xl font-bold text-white bg-[#0047d6] hover:bg-[#0033a8] transition-colors"
+                >
+                  J&apos;ai noté mon PIN
+                </button>
+              </div>
+            ) : (
+              /* Saisie PIN actuel pour régénérer */
+              <div>
+                <p className="text-sm text-slate-600 mb-4">
+                  Pour des raisons de sécurité, votre PIN est hashé et ne peut pas être affiché en clair.
+                  Si vous l&apos;avez oublié, vous pouvez en <strong>générer un nouveau</strong> en saisissant votre PIN actuel.
+                </p>
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">
+                  ⚠️ Si vous avez oublié votre PIN actuel, contactez le support :{' '}
+                  <a href="mailto:contact@qrbag.com" className="underline font-bold">contact@qrbag.com</a>
+                </p>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="PIN actuel (••••)"
+                  value={pinRecoveryInput}
+                  onChange={(e) => setPinRecoveryInput(e.target.value.replace(/\D/g, ''))}
+                  className="w-full text-center text-2xl tracking-[0.5em] bg-slate-50 border-2 border-slate-200 rounded-xl py-3 px-4 text-[#1a1a1a] focus:ring-2 focus:ring-[#0047d6] focus:border-[#0047d6] transition-all mb-3"
+                  autoFocus
+                />
+                {pinRecoveryError && (
+                  <p className="text-sm text-red-600 mb-3">{pinRecoveryError}</p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowPinRecoveryModal(false); setPinRecoveryInput(''); setPinRecoveryError(''); }}
+                    className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handlePinRecovery}
+                    disabled={pinRecoveryLoading || !pinRecoveryInput}
+                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-[#0047d6] hover:bg-[#0033a8] disabled:opacity-50 transition-colors"
+                  >
+                    {pinRecoveryLoading ? '...' : 'Régénérer'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ═══ LABS — Feature G: Modal Partage familial ═══ */}
       {showShareModal && (
