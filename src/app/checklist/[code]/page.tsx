@@ -28,6 +28,7 @@ interface ChecklistView {
   departureDate?: string;
   destinationCountry?: string;
   airline?: string | null;
+  flightNumber?: string | null;
   items?: Array<{ category: string; name: string; qty: number; checked: boolean }>;
   itemsCount?: number;
   createdAt?: string;
@@ -303,6 +304,15 @@ export default function ChecklistViewPage() {
                       <div className="min-w-0">
                         <div className="text-[10px] text-slate-500">Compagnie</div>
                         <div className="font-semibold text-slate-900 truncate">{view.airline}</div>
+                      </div>
+                    </div>
+                  )}
+                  {view.flightNumber && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-[10px] text-slate-500">N° de vol</div>
+                        <div className="font-mono font-semibold text-slate-900 truncate">{view.flightNumber}</div>
                       </div>
                     </div>
                   )}

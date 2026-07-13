@@ -523,6 +523,7 @@ model Checklist {
   departureDate   String   // ISO date string (yyyy-mm-dd) — kept as string for simplicity
   destinationCountry String
   airline         String?
+  flightNumber    String?  // ex: "AF123", "AT020"
   // Selected items (JSON array of {category, name, qty, checked})
   items           String   // JSON string
   itemsCount      Int      @default(0)

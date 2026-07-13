@@ -16,6 +16,7 @@ import {
   Globe,
   User,
   Mail,
+  Plane,
   CheckCircle2,
   Loader2,
   ArrowRight,
@@ -76,6 +77,8 @@ function ChecklistPageContent() {
   const [email, setEmail] = useState('');
   const [departureDate, setDepartureDate] = useState('');
   const [destinationCountry, setDestinationCountry] = useState('');
+  const [airline, setAirline] = useState('');
+  const [flightNumber, setFlightNumber] = useState('');
   const [selectedItems, setSelectedItems] = useState<Record<string, SelectedItem>>({});
   const [activeCategory, setActiveCategory] = useState<string>(DEFAULT_CHECKLIST_CATEGORIES[0].id);
 
@@ -160,7 +163,8 @@ function ChecklistPageContent() {
           email: email.trim(),
           departureDate,
           destinationCountry: destinationCountry.trim(),
-          airline: null,
+          airline: airline.trim() || null,
+          flightNumber: flightNumber.trim() || null,
           items: selectedList.map((it) => ({ ...it, checked: true } as ChecklistItem)),
         }),
       });
@@ -182,7 +186,7 @@ function ChecklistPageContent() {
     } finally {
       setSubmitting(false);
     }
-  }, [firstName, lastName, email, departureDate, destinationCountry, selectedList, selectedCount, t]);
+  }, [firstName, lastName, email, departureDate, destinationCountry, airline, flightNumber, selectedList, selectedCount, t]);
 
   // ─── Success screen ───
   if (success) {
@@ -251,6 +255,8 @@ function ChecklistPageContent() {
                   setEmail('');
                   setDepartureDate('');
                   setDestinationCountry('');
+                  setAirline('');
+                  setFlightNumber('');
                   setSelectedItems({});
                 }}
                 className="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-300 transition-colors"
@@ -390,6 +396,31 @@ function ChecklistPageContent() {
                 placeholder="Ex: Paris, Tokyo..."
               />
               <p className="text-[10px] text-slate-500 mt-1">{t('checklist.email_hint')}</p>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-700 mb-1 block flex items-center gap-1">
+                <Plane className="w-3 h-3" /> {t('checklist.airline')}
+              </label>
+              <input
+                type="text"
+                value={airline}
+                onChange={(e) => setAirline(e.target.value)}
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
+                placeholder={t('checklist.airline_placeholder')}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-700 mb-1 block flex items-center gap-1">
+                <Plane className="w-3 h-3" /> Numéro de vol
+              </label>
+              <input
+                type="text"
+                value={flightNumber}
+                onChange={(e) => setFlightNumber(e.target.value.toUpperCase())}
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-mono uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
+                placeholder="Ex: AF1234, AT020"
+                maxLength={10}
+              />
             </div>
           </div>
         </div>

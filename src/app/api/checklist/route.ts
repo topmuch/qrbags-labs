@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { firstName, lastName, email, departureDate, destinationCountry, airline, items, photoPath, photoSizeBytes } = body;
+    const { firstName, lastName, email, departureDate, destinationCountry, airline, flightNumber, items, photoPath, photoSizeBytes } = body;
 
     // ─── Validation ───
     if (!firstName || typeof firstName !== 'string' || firstName.trim().length < 2) {
@@ -173,6 +173,7 @@ export async function POST(request: NextRequest) {
         departureDate,
         destinationCountry: destinationCountry.trim().slice(0, 80),
         airline: airline?.trim()?.slice(0, 100) || null,
+        flightNumber: flightNumber?.trim()?.slice(0, 20) || null,
         items: JSON.stringify(sanitizedItems),
         itemsCount: sanitizedItems.length,
         photoPath: typeof photoPath === 'string' && photoPath.startsWith('uploads/') ? photoPath : null,
@@ -192,6 +193,7 @@ export async function POST(request: NextRequest) {
         departureDate: checklist.departureDate,
         destinationCountry: checklist.destinationCountry,
         airline: checklist.airline,
+        flightNumber: checklist.flightNumber,
         items: sanitizedItems,
         publicUrl,
         createdAt: checklist.createdAt,

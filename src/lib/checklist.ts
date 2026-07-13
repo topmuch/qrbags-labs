@@ -88,6 +88,7 @@ export interface ChecklistPdfData {
   departureDate: string; // ISO date
   destinationCountry: string;
   airline?: string | null;
+  flightNumber?: string | null;
   items: ChecklistItem[];
   publicUrl: string; // absolute URL to /checklist/[code]
   createdAt?: Date;
@@ -360,7 +361,9 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<Buff
   });
 
   const infoPadX = 18;
-  const col2X = margin + (PAGE_W - 2 * margin) / 2 + 10;
+  const colW = (PAGE_W - 2 * margin) / 3;
+  const col2X = margin + colW + 4;
+  const col3X = margin + 2 * colW + 8;
 
   // Row 1
   page.drawText('VOYAGEUR', { x: margin + infoPadX, y: y - 16, size: 7, font: fontBold, color: gray });
@@ -369,12 +372,22 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<Buff
   page.drawText('DESTINATION', { x: col2X, y: y - 16, size: 7, font: fontBold, color: gray });
   page.drawText(data.destinationCountry, { x: col2X, y: y - 28, size: 11, font: fontBold, color: ink });
 
-  // Row 2
-  page.drawText('DÉPART', { x: margin + infoPadX, y: y - 48, size: 7, font: fontBold, color: gray });
-  page.drawText(formatDateFr(data.departureDate), { x: margin + infoPadX, y: y - 60, size: 11, font: fontBold, color: ink });
+  page.drawText('DÉPART', { x: col3X, y: y - 16, size: 7, font: fontBold, color: gray });
+  page.drawText(formatDateFr(data.departureDate), { x: col3X, y: y - 28, size: 11, font: fontBold, color: ink });
 
-  page.drawText('COMPAGNIE', { x: col2X, y: y - 48, size: 7, font: fontBold, color: gray });
-  page.drawText(data.airline || '—', { x: col2X, y: y - 60, size: 11, font: fontBold, color: ink });
+  // Row 2 — flight info (airline + flight number)
+  const airlineText = data.airline || '—';
+  const flightText = data.flightNumber || '—';
+
+  page.drawText('COMPAGNIE', { x: margin + infoPadX, y: y - 48, size: 7, font: fontBold, color: gray });
+  page.drawText(airlineText, { x: margin + infoPadX, y: y - 60, size: 11, font: fontBold, color: ink });
+
+  page.drawText('N° DE VOL', { x: col2X, y: y - 48, size: 7, font: fontBold, color: gray });
+  page.drawText(flightText, { x: col2X, y: y - 60, size: 11, font: fontBold, color: ink });
+
+  // Bottom-right: code/référence (to balance the empty 3rd cell on row 2)
+  page.drawText('RÉFÉRENCE', { x: col3X, y: y - 48, size: 7, font: fontBold, color: gray });
+  page.drawText(data.code, { x: col3X, y: y - 60, size: 11, font: fontMono, color: ink });
 
   y -= infoCardH + 16;
 
